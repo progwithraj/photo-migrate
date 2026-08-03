@@ -26,8 +26,9 @@ fun MediaPickerScreen(
     onBackClick: () -> Unit,
     onStartTransfer: (TransferMode, List<MediaItem>) -> Unit
 ) {
-    var selectedItems by remember(mediaItems) { mutableStateOf(mediaItems.toSet()) }
+    var selectedItems by remember { mutableStateOf(emptySet<MediaItem>()) }
     var selectedMode by remember { mutableStateOf(TransferMode.MOVE) }
+    var batchSize by remember { mutableStateOf(100) }
 
     val totalSelectedCount = selectedItems.size
     val allSelected = totalSelectedCount > 0 && totalSelectedCount == mediaItems.size
@@ -35,7 +36,14 @@ fun MediaPickerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Select Photos to Transfer", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+                title = { 
+                    Column {
+                        Text("Select Photos to Transfer", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        if (isLoading) {
+                            Text("Loading more... (${mediaItems.size} found)", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -93,6 +101,39 @@ fun MediaPickerScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    // Batch Selection Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Batch Size:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        listOf(100, 200, 500, 1000).forEach { size ->
+                            val isSelected = batchSize == size
+                            InputChip(
+                                selected = isSelected,
+                                onClick = { batchSize = size },
+                                label = { Text("$size") },
+                                modifier = Modifier.height(32.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        TextButton(
+                            onClick = {
+                                selectedItems = mediaItems.take(batchSize).toSet()
+                            },
+                            enabled = mediaItems.isNotEmpty()
+                        ) {
+                            Icon(Icons.Default.AutoFixHigh, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Select Next Batch")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -113,7 +154,7 @@ fun MediaPickerScreen(
 
                         Button(
                             onClick = { onStartTransfer(selectedMode, selectedItems.toList()) },
-                            enabled = totalSelectedCount > 0 && !isLoading,
+                            enabled = totalSelectedCount > 0,
                             shape = MaterialTheme.shapes.medium
                         ) {
                             Text("Start Transfer")
@@ -130,7 +171,7 @@ fun MediaPickerScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (isLoading) {
+            if (isLoading && mediaItems.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -140,7 +181,7 @@ fun MediaPickerScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Fetching photos from source Google account...", fontSize = 14.sp)
                 }
-            } else if (mediaItems.isEmpty()) {
+            } else if (mediaItems.isEmpty() && !isLoading) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

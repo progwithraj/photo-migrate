@@ -80,10 +80,11 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onProceedToPicker = {
                                     val sourceAccount = accounts.find { it.id == selectedSourceId }
+                                    val destAccount = accounts.find { it.id == selectedDestId }
                                     if (sourceAccount != null) {
                                         // Load media in background
                                         lifecycleScope.launch {
-                                            repository.loadSourceMedia(sourceAccount)
+                                            repository.loadSourceMedia(sourceAccount, destAccount)
                                         }
                                         navController.navigate("picker")
                                     }

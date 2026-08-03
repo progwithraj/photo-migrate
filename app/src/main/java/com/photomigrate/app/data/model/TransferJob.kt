@@ -29,14 +29,14 @@ data class TransferJob(
     val destinationAccountId: String,
     val mode: TransferMode = TransferMode.COPY,
     val selectedMediaIds: List<String> = emptyList(),
-    var totalItems: Int = 0,
-    var completedItems: Int = 0,
-    var failedItems: Int = 0,
-    var totalBytes: Long = 0L,
-    var transferredBytes: Long = 0L,
-    var speedBytesPerSec: Long = 0L,
-    var status: JobStatus = JobStatus.IDLE,
-    val logs: MutableList<TransferLog> = mutableListOf()
+    val totalItems: Int = 0,
+    val completedItems: Int = 0,
+    val failedItems: Int = 0,
+    val totalBytes: Long = 0L,
+    val transferredBytes: Long = 0L,
+    val speedBytesPerSec: Long = 0L,
+    val status: JobStatus = JobStatus.IDLE,
+    val logs: List<TransferLog> = emptyList()
 ) {
     val progress: Float
         get() = if (totalItems > 0) completedItems.toFloat() / totalItems.toFloat() else 0f

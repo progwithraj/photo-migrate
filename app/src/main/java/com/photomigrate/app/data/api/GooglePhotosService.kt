@@ -59,7 +59,7 @@ class GooglePhotosService(private val context: Context) {
 
             val json = gson.fromJson(responseBody, Map::class.java)
             val rawItems = json["mediaItems"] as? List<Map<*, *>> ?: emptyList()
-            Log.d("GooglePhotosService", "Found ${rawItems.size} items in Photos API")
+            Log.d("GooglePhotosService", "Found ${rawItems.size} items in Photos API page. Total JSON keys: ${json.keys}")
             val nextPageToken = json["nextPageToken"] as? String
 
             val mediaItems = rawItems.mapNotNull { itemMap ->
@@ -90,6 +90,93 @@ class GooglePhotosService(private val context: Context) {
         } catch (e: Exception) {
             return Pair(emptyList(), null)
         }
+    }
+
+    /**
+     * Fetches metadata for specific media items by their IDs.
+     */
+    fun fetchMediaItemsByIds(account: GoogleAccount, ids: List<String>): List<MediaItem> {
+        if (ids.isEmpty()) return emptyList()
+        
+        // Photos API batchGet limit is 50 items per request
+        val results = mutableListOf<MediaItem>()
+        val chunks = ids.chunked(50)
+        
+        for (chunk in chunks) {
+            val urlBuilder = StringBuilder("$PHOTOS_BASE_URL/mediaItems:batchGet?")
+            chunk.forEach { id -> urlBuilder.append("mediaItemIds=$id&") }
+            
+            val request = Request.Builder()
+                .url(urlBuilder.toString().removeSuffix("&"))
+                .addHeader("Authorization", "Bearer ${account.accessToken}")
+                .get()
+                .build()
+
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val json = gson.fromJson(response.body?.string(), Map::class.java)
+                    val rawResults = json["mediaItemResults"] as? List<Map<*, *>> ?: emptyList()
+                    
+                    rawResults.forEach { res ->
+                        val itemMap = res["mediaItem"] as? Map<*, *> ?: return@forEach
+                        val id = itemMap["id"] as? String ?: return@forEach
+                        val filename = itemMap["filename"] as? String ?: "photo_$id.jpg"
+                        val mimeType = itemMap["mimeType"] as? String ?: "image/jpeg"
+                        val baseUrl = itemMap["baseUrl"] as? String ?: ""
+                        
+                        results.add(MediaItem(
+                            id = id,
+                            filename = filename,
+                            mimeType = mimeType,
+                            sizeBytes = 0L,
+                            baseUrl = baseUrl,
+                            accountId = account.id
+                        ))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("GooglePhotosService", "Error in batchGet: ${e.message}")
+            }
+        }
+        
+        // If some items failed (maybe they are from Drive API or permission issue), 
+        // fallback to Drive API search for the missing IDs
+        if (results.size < ids.size) {
+            val foundIds = results.map { it.id }.toSet()
+            val remainingIds = ids.filter { it !in foundIds }
+            results.addAll(fetchDriveItemsByIds(account, remainingIds))
+        }
+        
+        return results
+    }
+
+    private fun fetchDriveItemsByIds(account: GoogleAccount, ids: List<String>): List<MediaItem> {
+        val results = mutableListOf<MediaItem>()
+        for (id in ids) {
+            val url = "$DRIVE_BASE_URL/files/$id?fields=id,name,mimeType,size,createdTime,thumbnailLink"
+            val request = Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer ${account.accessToken}")
+                .get()
+                .build()
+            try {
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val file = gson.fromJson(response.body?.string(), Map::class.java)
+                    results.add(MediaItem(
+                        id = file["id"] as String,
+                        filename = file["name"] as? String ?: "photo.jpg",
+                        mimeType = file["mimeType"] as? String ?: "image/jpeg",
+                        sizeBytes = (file["size"] as? String)?.toLongOrNull() ?: 0L,
+                        baseUrl = "$DRIVE_BASE_URL/files/${file["id"]}?alt=media",
+                        thumbnailUrl = file["thumbnailLink"] as? String,
+                        accountId = account.id
+                    ))
+                }
+            } catch (e: Exception) {}
+        }
+        return results
     }
 
     /**

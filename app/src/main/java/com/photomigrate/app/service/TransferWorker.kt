@@ -49,41 +49,55 @@ class TransferWorker(
         createNotificationChannel()
         setForeground(createForegroundInfo("Preparing photo transfer...", 0, 100))
 
-        // Ensure we have a job object in the repository for the UI to track
-        val allSourceItems = repository.loadSourceMedia(sourceAccount)
-        val selectedItems = allSourceItems.filter { it.id in selectedIds }
+        // EFFICIENT FETCH: Instead of loadSourceMedia (which scans everything), 
+        // fetch only the metadata for the specific IDs selected.
+        val selectedItems = repository.fetchItemsForWorker(sourceAccount, selectedIds.toList())
+        Log.d("TransferWorker", "Fetched ${selectedItems.size} items for processing. Expected: ${selectedIds.size}")
         
         if (selectedItems.isEmpty()) {
-            Log.w("TransferWorker", "No media items found to process.")
+            Log.w("TransferWorker", "No media items found to process or fetched 0 items.")
+            repository.updateJobStatus(JobStatus.FAILED)
             return Result.success()
         }
 
-        repository.createAndStartJob(sourceAccount, destAccount, mode, selectedItems)
+        // Only create a new job if one isn't already active for these accounts
+        val existingJob = repository.currentJob.value
+        if (existingJob == null || existingJob.sourceAccountId != sourceId || existingJob.destinationAccountId != destId) {
+            repository.createAndStartJob(sourceAccount, destAccount, mode, selectedItems)
+        }
+        
+        Log.d("TransferWorker", "Job ready. Starting loop...")
 
-        for ((index, item) in selectedItems.withIndex()) {
-            val job = repository.currentJob.value
-            if (job?.status == JobStatus.PAUSED) {
-                while (repository.currentJob.value?.status == JobStatus.PAUSED) {
-                    delay(1000)
+        try {
+            for ((index, item) in selectedItems.withIndex()) {
+                val job = repository.currentJob.value
+                if (job?.status == JobStatus.PAUSED) {
+                    while (repository.currentJob.value?.status == JobStatus.PAUSED) {
+                        delay(1000)
+                    }
+                }
+
+                if (repository.currentJob.value?.status == JobStatus.CANCELLED) {
+                    break
+                }
+
+                val progressPercent = ((index + 1) * 100) / selectedItems.size
+                val notificationText = "Syncing ${index + 1}/${selectedItems.size}: ${item.filename}"
+                setForeground(createForegroundInfo(notificationText, progressPercent, 100))
+
+                repository.processNextMediaItem(
+                    sourceAccount = sourceAccount,
+                    destinationAccount = destAccount,
+                    item = item,
+                    mode = mode
+                ) { updatedJob ->
+                    // Update live job state
                 }
             }
-
-            if (repository.currentJob.value?.status == JobStatus.CANCELLED) {
-                break
-            }
-
-            val progressPercent = ((index + 1) * 100) / selectedItems.size
-            val notificationText = "Syncing ${index + 1}/${selectedItems.size}: ${item.filename}"
-            setForeground(createForegroundInfo(notificationText, progressPercent, 100))
-
-            repository.processNextMediaItem(
-                sourceAccount = sourceAccount,
-                destinationAccount = destAccount,
-                item = item,
-                mode = mode
-            ) { updatedJob ->
-                // Update live job state
-            }
+        } catch (e: Exception) {
+            Log.e("TransferWorker", "Fatal error during loop: ${e.message}", e)
+            repository.updateJobStatus(JobStatus.FAILED)
+            repository.forceLog("CRITICAL ERROR: ${e.message}", true)
         }
 
         val finalJob = repository.currentJob.value
