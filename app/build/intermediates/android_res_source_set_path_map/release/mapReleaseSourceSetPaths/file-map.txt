@@ -1,0 +1,7 @@
+com.photomigrate.app-updated_navigation_xml-0 /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/build/generated/updated_navigation_xml/release
+com.photomigrate.app-packageReleaseResources-1 /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/build/intermediates/incremental/release/packageReleaseResources/merged.dir
+com.photomigrate.app-packageReleaseResources-2 /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/build/intermediates/incremental/release/packageReleaseResources/stripped.dir
+com.photomigrate.app-release-3 /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/build/intermediates/merged_res/release/mergeReleaseResources
+com.photomigrate.app-main-4 /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/res
+com.photomigrate.app-release-5 /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/release/res
+gradleHome-0 /Users/IPRIYANATH/.gradle

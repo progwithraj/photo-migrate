@@ -1,0 +1,6 @@
+com.photomigrate.app
+drawable ic_launcher
+string app_name
+style Theme_PhotoMigrate
+xml backup_rules
+xml data_extraction_rules

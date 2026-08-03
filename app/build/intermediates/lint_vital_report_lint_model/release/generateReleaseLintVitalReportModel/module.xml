@@ -1,0 +1,20 @@
+<lint-module
+    format="1"
+    dir="/Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app"
+    name=":app"
+    type="APP"
+    maven="PhotoMigrate:app:unspecified"
+    agpVersion="9.2.1"
+    buildFolder="build"
+    bootClassPath="/Users/IPRIYANATH/Library/Android/sdk/platforms/android-34/android.jar:/Users/IPRIYANATH/Library/Android/sdk/build-tools/36.0.0/core-lambda-stubs.jar"
+    javaSourceLevel="17"
+    compileTarget="android-34"
+    neverShrinking="true"
+    highlightGradualR8Api="false">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>
