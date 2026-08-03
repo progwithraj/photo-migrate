@@ -29,6 +29,7 @@ fun AccountScreen(
     onAddAccountClick: () -> Unit,
     onOpenSetupGuide: () -> Unit,
     onRemoveAccount: (String) -> Unit,
+    onRefreshAll: () -> Unit,
     onProceedToPicker: () -> Unit
 ) {
     Scaffold(
@@ -132,13 +133,19 @@ fun AccountScreen(
                         fontSize = 16.sp
                     )
 
-                    OutlinedButton(
-                        onClick = onAddAccountClick,
-                        shape = MaterialTheme.shapes.small
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Add Account")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onRefreshAll) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Refresh Storage Usage")
+                        }
+
+                        OutlinedButton(
+                            onClick = onAddAccountClick,
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Add Account")
+                        }
                     }
                 }
             }

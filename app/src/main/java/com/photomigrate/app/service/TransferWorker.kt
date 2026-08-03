@@ -49,6 +49,12 @@ class TransferWorker(
         createNotificationChannel()
         setForeground(createForegroundInfo("Preparing photo transfer...", 0, 100))
 
+        // INITIALIZE UI IMMEDIATELY
+        // We create a dummy job so the UI shows "Preparing..." while we fetch metadata
+        val initialJob = repository.createAndStartJob(sourceAccount, destAccount, mode, emptyList())
+        var currentJobId = initialJob.id
+        repository.forceLog(currentJobId, "Preparing metadata for ${selectedIds.size} items...")
+
         // EFFICIENT FETCH: Instead of loadSourceMedia (which scans everything), 
         // fetch only the metadata for the specific IDs selected.
         val selectedItems = repository.fetchItemsForWorker(sourceAccount, selectedIds.toList())
@@ -57,21 +63,26 @@ class TransferWorker(
         if (selectedItems.isEmpty()) {
             Log.w("TransferWorker", "No media items found to process or fetched 0 items.")
             repository.updateJobStatus(JobStatus.FAILED)
+            repository.forceLog(currentJobId, "Error: Could not retrieve metadata for selected items.", true)
             return Result.success()
         }
 
-        // Only create a new job if one isn't already active for these accounts
-        val existingJob = repository.currentJob.value
-        if (existingJob == null || existingJob.sourceAccountId != sourceId || existingJob.destinationAccountId != destId) {
-            repository.createAndStartJob(sourceAccount, destAccount, mode, selectedItems)
-        }
+        // ALWAYS initialize a fresh job for the new selection to ensure progress starts at 0%
+        // and totalItems matches the actual batch size.
+        val actualJob = repository.createAndStartJob(sourceAccount, destAccount, mode, selectedItems)
+        currentJobId = actualJob.id // UPDATE to the real job ID being tracked
         
         Log.d("TransferWorker", "Job ready. Starting loop...")
 
         try {
             for ((index, item) in selectedItems.withIndex()) {
-                val job = repository.currentJob.value
-                if (job?.status == JobStatus.PAUSED) {
+                val currentJob = repository.currentJob.value
+                if (currentJob?.id != currentJobId) {
+                    Log.d("TransferWorker", "Job ID mismatch (New job started?). Aborting old worker.")
+                    return Result.success()
+                }
+
+                if (currentJob.status == JobStatus.PAUSED) {
                     while (repository.currentJob.value?.status == JobStatus.PAUSED) {
                         delay(1000)
                     }
@@ -89,19 +100,25 @@ class TransferWorker(
                     sourceAccount = sourceAccount,
                     destinationAccount = destAccount,
                     item = item,
-                    mode = mode
+                    mode = mode,
+                    jobId = currentJobId
                 ) { updatedJob ->
                     // Update live job state
                 }
             }
+            
+            // Only mark as COMPLETED if we actually reached the end of the loop 
+            // and the job ID still matches.
+            if (repository.currentJob.value?.id == currentJobId) {
+                repository.updateJobStatus(JobStatus.COMPLETED)
+            }
         } catch (e: Exception) {
             Log.e("TransferWorker", "Fatal error during loop: ${e.message}", e)
             repository.updateJobStatus(JobStatus.FAILED)
-            repository.forceLog("CRITICAL ERROR: ${e.message}", true)
+            repository.forceLog(currentJobId, "CRITICAL ERROR: ${e.message}", true)
         }
 
         val finalJob = repository.currentJob.value
-        repository.updateJobStatus(JobStatus.COMPLETED)
         val summaryText = "Completed ${finalJob?.completedItems ?: 0} of ${selectedItems.size} photos."
         showCompletionNotification(summaryText)
 

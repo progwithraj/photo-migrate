@@ -20,6 +20,7 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.photomigrate.app.data.auth.OAuthManager
+import com.photomigrate.app.data.billing.PremiumManager
 import com.photomigrate.app.data.model.GoogleAccount
 import com.photomigrate.app.data.model.MediaItem
 import com.photomigrate.app.data.model.TransferMode
@@ -27,18 +28,20 @@ import com.photomigrate.app.data.repository.TransferRepository
 import com.photomigrate.app.service.TransferWorker
 import com.photomigrate.app.ui.screens.*
 import com.photomigrate.app.ui.theme.PhotoMigrateTheme
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var oauthManager: OAuthManager
     private lateinit var repository: TransferRepository
+    private lateinit var premiumManager: PremiumManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         oauthManager = OAuthManager(this)
         repository = TransferRepository.getInstance(this)
+        premiumManager = PremiumManager(this)
 
         handleOAuthRedirect(intent)
 
@@ -57,6 +60,7 @@ class MainActivity : ComponentActivity() {
                     val sourceMediaList by repository.sourceMediaList.collectAsState()
                     val isLoadingMedia by repository.isLoadingMedia.collectAsState()
                     val currentJob by repository.currentJob.collectAsState()
+                    val isPremium by premiumManager.isPremium.collectAsState()
 
                     NavHost(navController = navController, startDestination = "accounts") {
                         composable("accounts") {
@@ -78,6 +82,18 @@ class MainActivity : ComponentActivity() {
                                     if (selectedSourceId == accounts.find { it.email == email }?.id) selectedSourceId = null
                                     if (selectedDestId == accounts.find { it.email == email }?.id) selectedDestId = null
                                 },
+                                onRefreshAll = {
+                                    lifecycleScope.launch {
+                                        val currentAccs = oauthManager.getSavedAccounts()
+                                        // Run refreshes in parallel for speed
+                                        currentAccs.map { account ->
+                                            async { oauthManager.refreshStorageQuota(account) }
+                                        }.awaitAll()
+                                        
+                                        accounts = oauthManager.getSavedAccounts()
+                                        Toast.makeText(this@MainActivity, "Storage usage updated!", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
                                 onProceedToPicker = {
                                     val sourceAccount = accounts.find { it.id == selectedSourceId }
                                     val destAccount = accounts.find { it.id == selectedDestId }
@@ -98,27 +114,35 @@ class MainActivity : ComponentActivity() {
                                 isLoading = isLoadingMedia,
                                 onBackClick = { navController.popBackStack() },
                                 onStartTransfer = { mode, selectedItems ->
-                                    val sourceAcc = accounts.find { it.id == selectedSourceId }
-                                    val destAcc = accounts.find { it.id == selectedDestId }
+                                    if (!isPremium) {
+                                        premiumManager.launchPurchaseFlow(this@MainActivity)
+                                    } else {
+                                        val sourceAcc = accounts.find { it.id == selectedSourceId }
+                                        val destAcc = accounts.find { it.id == selectedDestId }
 
-                                    if (sourceAcc != null && destAcc != null) {
-                                        repository.createAndStartJob(sourceAcc, destAcc, mode, selectedItems)
+                                        if (sourceAcc != null && destAcc != null) {
+                                            repository.createAndStartJob(sourceAcc, destAcc, mode, selectedItems)
 
-                                        // Enqueue WorkManager background worker
-                                        val workData = Data.Builder()
-                                            .putString(TransferWorker.KEY_SOURCE_ACCOUNT_ID, sourceAcc.id)
-                                            .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destAcc.id)
-                                            .putString(TransferWorker.KEY_MODE, mode.name)
-                                            .putStringArray(TransferWorker.KEY_SELECTED_IDS, selectedItems.map { it.id }.toTypedArray())
-                                            .build()
+                                            // Enqueue WorkManager background worker
+                                            val workData = Data.Builder()
+                                                .putString(TransferWorker.KEY_SOURCE_ACCOUNT_ID, sourceAcc.id)
+                                                .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destAcc.id)
+                                                .putString(TransferWorker.KEY_MODE, mode.name)
+                                                .putStringArray(TransferWorker.KEY_SELECTED_IDS, selectedItems.map { it.id }.toTypedArray())
+                                                .build()
 
-                                        val workRequest = OneTimeWorkRequestBuilder<TransferWorker>()
-                                            .setInputData(workData)
-                                            .build()
+                                            val workRequest = OneTimeWorkRequestBuilder<TransferWorker>()
+                                                .setInputData(workData)
+                                                .build()
 
-                                        WorkManager.getInstance(applicationContext).enqueue(workRequest)
+                                            WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+                                                "photo_transfer_work",
+                                                androidx.work.ExistingWorkPolicy.REPLACE,
+                                                workRequest
+                                            )
 
-                                        navController.navigate("transfer")
+                                            navController.navigate("transfer")
+                                        }
                                     }
                                 }
                             )
@@ -130,6 +154,18 @@ class MainActivity : ComponentActivity() {
                                 onPauseClick = { repository.pauseJob() },
                                 onResumeClick = { repository.resumeJob() },
                                 onDoneClick = {
+                                    // Refresh storage usage for the accounts involved in transfer
+                                    lifecycleScope.launch {
+                                        val currentAccs = oauthManager.getSavedAccounts()
+                                        selectedSourceId?.let { id ->
+                                            currentAccs.find { it.id == id }?.let { oauthManager.refreshStorageQuota(it) }
+                                        }
+                                        selectedDestId?.let { id ->
+                                            currentAccs.find { it.id == id }?.let { oauthManager.refreshStorageQuota(it) }
+                                        }
+                                        // Update local state to trigger UI refresh on Home Screen
+                                        accounts = oauthManager.getSavedAccounts()
+                                    }
                                     navController.popBackStack("accounts", inclusive = false)
                                 }
                             )

@@ -26,11 +26,11 @@ fun MediaPickerScreen(
     onBackClick: () -> Unit,
     onStartTransfer: (TransferMode, List<MediaItem>) -> Unit
 ) {
-    var selectedItems by remember { mutableStateOf(emptySet<MediaItem>()) }
+    var selectedIds by remember { mutableStateOf(emptySet<String>()) }
     var selectedMode by remember { mutableStateOf(TransferMode.MOVE) }
     var batchSize by remember { mutableStateOf(100) }
 
-    val totalSelectedCount = selectedItems.size
+    val totalSelectedCount = selectedIds.size
     val allSelected = totalSelectedCount > 0 && totalSelectedCount == mediaItems.size
 
     Scaffold(
@@ -51,7 +51,7 @@ fun MediaPickerScreen(
                 },
                 actions = {
                     TextButton(onClick = {
-                        selectedItems = if (allSelected) emptySet() else mediaItems.toSet()
+                        selectedIds = if (allSelected) emptySet() else mediaItems.map { it.id }.toSet()
                     }) {
                         Text(if (allSelected) "Deselect All" else "Select All")
                     }
@@ -122,7 +122,7 @@ fun MediaPickerScreen(
                         
                         TextButton(
                             onClick = {
-                                selectedItems = mediaItems.take(batchSize).toSet()
+                                selectedIds = mediaItems.take(batchSize).map { it.id }.toSet()
                             },
                             enabled = mediaItems.isNotEmpty()
                         ) {
@@ -153,7 +153,10 @@ fun MediaPickerScreen(
                         }
 
                         Button(
-                            onClick = { onStartTransfer(selectedMode, selectedItems.toList()) },
+                            onClick = { 
+                                val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
+                                onStartTransfer(selectedMode, itemsToTransfer) 
+                            },
                             enabled = totalSelectedCount > 0,
                             shape = MaterialTheme.shapes.medium
                         ) {
@@ -212,15 +215,15 @@ fun MediaPickerScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(mediaItems) { item ->
-                        val isSelected = selectedItems.contains(item)
+                    items(mediaItems, key = { it.id }) { item ->
+                        val isSelected = selectedIds.contains(item.id)
                         MediaItemGridCard(
                             item = item.copy(isSelected = isSelected),
                             onToggleSelect = {
-                                selectedItems = if (isSelected) {
-                                    selectedItems - item
+                                selectedIds = if (isSelected) {
+                                    selectedIds - item.id
                                 } else {
-                                    selectedItems + item
+                                    selectedIds + item.id
                                 }
                             }
                         )

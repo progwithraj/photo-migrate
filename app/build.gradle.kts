@@ -90,6 +90,9 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
+    // Google Play Billing
+    implementation("com.android.billingclient:billing-ktx:7.0.0")
+
     // Room Database
     val roomVersion = "2.8.4"
     implementation("androidx.room:room-runtime:$roomVersion")
