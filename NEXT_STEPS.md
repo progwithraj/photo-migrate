@@ -2,10 +2,10 @@
 
 This document outlines potential high-value features to build on top of the existing PhotoMigrate foundation.
 
-## 1. Smart Duplicate Detection
+## 1. Smart Duplicate Detection [COMPLETED]
 Prevent destination library clutter by identifying existing media.
-- **Implementation**: Compare file names, timestamps, and perceptual hashes (visual similarity).
-- **Benefit**: Saves storage space and ensures a clean migration.
+- **Implementation**: Indexing destination metadata (Filename, Size, CreationTime) and comparing before download.
+- **Benefit**: Saves significant bandwidth and storage by skipping existing items.
 
 ## 2. Cross-Platform Migration
 Expand beyond Google Photos to support a wider ecosystem.

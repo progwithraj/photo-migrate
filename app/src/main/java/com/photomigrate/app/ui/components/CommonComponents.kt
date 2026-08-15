@@ -252,16 +252,14 @@ fun RoleButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isSelected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        Color.Transparent
+    val backgroundColor = when {
+        isSelected -> MaterialTheme.colorScheme.primary
+        else -> Color.Transparent
     }
 
-    val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = when {
+        isSelected -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Box(

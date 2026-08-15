@@ -106,7 +106,14 @@ class TransferWorker(
             }
             
             if (repository.currentJob.value?.id == jobId) {
-                repository.updateJobStatus(JobStatus.COMPLETED)
+                val finalJob = repository.currentJob.value
+                val status = when {
+                    finalJob == null -> JobStatus.FAILED
+                    finalJob.failedItems > 0 && finalJob.completedItems == 0 -> JobStatus.FAILED
+                    finalJob.failedItems > 0 -> JobStatus.COMPLETED // Or add a PARTIAL status
+                    else -> JobStatus.COMPLETED
+                }
+                repository.updateJobStatus(status)
             }
         } catch (e: Exception) {
             Log.e("TransferWorker", "Fatal error during loop: ${e.message}", e)

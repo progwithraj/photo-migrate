@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.source
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -20,9 +21,9 @@ import java.util.concurrent.TimeUnit
 class GooglePhotosService(private val context: Context) {
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
         .build()
 
     private val gson = Gson()
@@ -344,7 +345,24 @@ class GooglePhotosService(private val context: Context) {
         // Step 1: Upload raw bytes to uploads endpoint
         val uploadUrl = "$PHOTOS_BASE_URL/uploads"
         val mediaType = mimeType.toMediaType()
-        val requestBody = file.asRequestBody(mediaType)
+        
+        // Custom RequestBody to track upload progress for the ECG graph
+        val requestBody = object : okhttp3.RequestBody() {
+            override fun contentType() = mediaType
+            override fun contentLength() = file.length()
+            override fun writeTo(sink: okio.BufferedSink) {
+                file.inputStream().source().use { source ->
+                    var totalRead = 0L
+                    val buffer = okio.Buffer()
+                    var read: Long
+                    while (source.read(buffer, 8192L).also { read = it } != -1L) {
+                        sink.write(buffer, read)
+                        totalRead += read
+                        onProgress(totalRead, file.length())
+                    }
+                }
+            }
+        }
 
         val uploadRequest = Request.Builder()
             .url(uploadUrl)
@@ -357,9 +375,11 @@ class GooglePhotosService(private val context: Context) {
 
         try {
             val uploadResp = client.newCall(uploadRequest).execute()
-            val uploadToken = uploadResp.body?.string()?.trim() ?: ""
+            val responseBody = uploadResp.body?.string() ?: ""
+            val uploadToken = responseBody.trim()
 
             if (!uploadResp.isSuccessful || uploadToken.isEmpty()) {
+                Log.e("GooglePhotosService", "Upload failed with code ${uploadResp.code}: $responseBody")
                 // Fallback upload via Drive API if photos upload fails
                 return uploadToDrive(destinationAccount, file, filename, mimeType)
             }

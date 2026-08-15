@@ -71,8 +71,22 @@ class MainActivity : ComponentActivity() {
                                     accounts = accounts,
                                     selectedSourceId = selectedSourceId,
                                     selectedDestId = selectedDestId,
-                                    onSelectSourceAccount = { selectedSourceId = it },
-                                    onSelectDestAccount = { selectedDestId = it },
+                                    onSelectSourceAccount = { id ->
+                                        if (id == selectedDestId) {
+                                            // Swap logic: if selecting current destination as source, 
+                                            // make current source the new destination
+                                            selectedDestId = selectedSourceId
+                                        }
+                                        selectedSourceId = id
+                                    },
+                                    onSelectDestAccount = { id ->
+                                        if (id == selectedSourceId) {
+                                            // Swap logic: if selecting current source as destination,
+                                            // make current destination the new source
+                                            selectedSourceId = selectedDestId
+                                        }
+                                        selectedDestId = id
+                                    },
                                     onAddAccountClick = {
                                         val authUrl = oauthManager.generateAuthUrl()
                                         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(authUrl))
