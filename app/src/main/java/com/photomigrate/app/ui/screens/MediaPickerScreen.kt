@@ -1,22 +1,25 @@
 package com.photomigrate.app.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.photomigrate.app.data.model.MediaItem
 import com.photomigrate.app.data.model.TransferMode
+import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.MediaItemGridCard
-import com.photomigrate.app.ui.theme.PrimaryBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,101 +29,132 @@ fun MediaPickerScreen(
     onBackClick: () -> Unit,
     onStartTransfer: (TransferMode, List<MediaItem>) -> Unit
 ) {
-    var selectedItems by remember(mediaItems) { mutableStateOf(mediaItems.toSet()) }
+    var selectedIds by remember { mutableStateOf(emptySet<String>()) }
     var selectedMode by remember { mutableStateOf(TransferMode.MOVE) }
+    var batchSize by remember { mutableStateOf(100) }
 
-    val totalSelectedCount = selectedItems.size
+    val totalSelectedCount = selectedIds.size
     val allSelected = totalSelectedCount > 0 && totalSelectedCount == mediaItems.size
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(
-                title = { Text("Select Photos to Transfer", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent
+                ),
+                title = { 
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "Select Items",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp,
+                            letterSpacing = (-0.5).sp
+                        )
+                        if (isLoading) {
+                            Text(
+                                "Scanning... (${mediaItems.size})",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.Close, contentDescription = "Cancel")
                     }
                 },
                 actions = {
                     TextButton(onClick = {
-                        selectedItems = if (allSelected) emptySet() else mediaItems.toSet()
+                        selectedIds = if (allSelected) emptySet() else mediaItems.map { it.id }.toSet()
                     }) {
-                        Text(if (allSelected) "Deselect All" else "Select All")
+                        Text(
+                            if (allSelected) "None" else "All",
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             )
         },
         bottomBar = {
-            Surface(
-                tonalElevation = 8.dp,
-                shadowElevation = 8.dp,
-                modifier = Modifier.fillMaxWidth()
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                // Batch Size and Mode
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Mode Selector: COPY vs MOVE
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = selectedMode == TransferMode.MOVE,
-                            onClick = { selectedMode = TransferMode.MOVE },
-                            label = { Text("Move Mode (Frees Storage)") },
-                            leadingIcon = {
-                                if (selectedMode == TransferMode.MOVE) {
-                                    Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp))
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        FilterChip(
-                            selected = selectedMode == TransferMode.COPY,
-                            onClick = { selectedMode = TransferMode.COPY },
-                            label = { Text("Copy Mode (Duplicate)") },
-                            leadingIcon = {
-                                if (selectedMode == TransferMode.COPY) {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "$totalSelectedCount Photos Selected",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                            Text(
-                                text = if (selectedMode == TransferMode.MOVE) "Originals will be trashed in source to free space" else "Originals will stay in source account",
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        Button(
-                            onClick = { onStartTransfer(selectedMode, selectedItems.toList()) },
-                            enabled = totalSelectedCount > 0 && !isLoading,
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Text("Start Transfer")
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Column {
+                        Text("Batch Size", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            listOf(100, 500, 1000).forEach { size ->
+                                FilterChip(
+                                    selected = batchSize == size,
+                                    onClick = { batchSize = size },
+                                    label = { Text("$size") },
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                            }
                         }
                     }
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("Mode", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            FilterChip(
+                                selected = selectedMode == TransferMode.MOVE,
+                                onClick = { selectedMode = TransferMode.MOVE },
+                                label = { Text("Move") },
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            FilterChip(
+                                selected = selectedMode == TransferMode.COPY,
+                                onClick = { selectedMode = TransferMode.COPY },
+                                label = { Text("Copy") },
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { 
+                        val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
+                        onStartTransfer(selectedMode, itemsToTransfer) 
+                    },
+                    enabled = totalSelectedCount > 0,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(26.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(
+                        "Start Migration ($totalSelectedCount)",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                TextButton(
+                    onClick = {
+                        selectedIds = mediaItems.take(batchSize).map { it.id }.toSet()
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Icon(Icons.Default.AutoFixHigh, null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Auto-Select Next $batchSize", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -130,56 +164,37 @@ fun MediaPickerScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (isLoading) {
+            if (isLoading && mediaItems.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            } else if (mediaItems.isEmpty() && !isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator(color = PrimaryBlue)
+                    Icon(Icons.Default.PhotoLibrary, null, modifier = Modifier.size(64.dp), tint = Color.Gray)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Fetching photos from source Google account...", fontSize = 14.sp)
-                }
-            } else if (mediaItems.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PhotoLibrary,
-                        contentDescription = null,
-                        modifier = Modifier.size(56.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("No Photos Found", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "We couldn't find media items in this source account or standard permissions are being granted.",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text("No Photos Found", fontWeight = FontWeight.Bold)
                 }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(mediaItems) { item ->
-                        val isSelected = selectedItems.contains(item)
+                    items(mediaItems, key = { it.id }) { item ->
+                        val isSelected = selectedIds.contains(item.id)
                         MediaItemGridCard(
                             item = item.copy(isSelected = isSelected),
                             onToggleSelect = {
-                                selectedItems = if (isSelected) {
-                                    selectedItems - item
+                                selectedIds = if (isSelected) {
+                                    selectedIds - item.id
                                 } else {
-                                    selectedItems + item
+                                    selectedIds + item.id
                                 }
                             }
                         )

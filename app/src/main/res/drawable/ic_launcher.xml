@@ -1,9 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Blue rounded background -->
     <path
-        android:fillColor="#FF000000"
-        android:pathData="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
+        android:fillColor="#2563EB"
+        android:pathData="M17,4 L91,4 C98.18,4 104,9.82 104,17 L104,91 C104,98.18 98.18,104 91,104 L17,104 C9.82,104 4,98.18 4,91 L4,17 C4,9.82 9.82,4 17,4 Z" />
+
+    <!-- Left Google cloud -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,47 C14,41.48 18.48,37 24,37 C24.8,29.65 31.02,24 38.5,24 C44.25,24 49.2,27.3 51.7,32.05 C53.28,31.38 55.02,31 57,31 C64.18,31 70,36.82 70,44 C70,51.18 64.18,57 57,57 L24,57 C18.48,57 14,52.52 14,47 Z" />
+
+    <!-- Right Google cloud -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M48,55 C48,49.48 52.48,45 58,45 C58.8,37.65 65.02,32 72.5,32 C78.25,32 83.2,35.3 85.7,40.05 C87.28,39.38 89.02,39 91,39 C98.18,39 104,44.82 104,52 C104,59.18 98.18,65 91,65 L58,65 C52.48,65 48,60.52 48,55 Z" />
+
+    <!-- Left four-color migration mark -->
+    <path
+        android:fillColor="#EA4335"
+        android:pathData="M28,40 A9,9 0,0 1,41,32 L44,36 L38,40 A5,5 0,0 0,31,43 Z" />
+    <path
+        android:fillColor="#FBBC04"
+        android:pathData="M28,40 A9,9 0,0 0,28,50 L33,47 A5,5 0,0 1,31,43 Z" />
+    <path
+        android:fillColor="#34A853"
+        android:pathData="M28,50 A9,9 0,0 0,39,55 L42,50 L34,47 L33,47 Z" />
+    <path
+        android:fillColor="#4285F4"
+        android:pathData="M39,55 A9,9 0,0 0,45,47 L45,44 L36,44 L36,48 L40,48 L39,50 L33,47 Z" />
+
+    <!-- Right four-color migration mark -->
+    <path
+        android:fillColor="#EA4335"
+        android:pathData="M68,48 A9,9 0,0 1,81,40 L84,44 L78,48 A5,5 0,0 0,71,51 Z" />
+    <path
+        android:fillColor="#FBBC04"
+        android:pathData="M68,48 A9,9 0,0 0,68,58 L73,55 A5,5 0,0 1,71,51 Z" />
+    <path
+        android:fillColor="#34A853"
+        android:pathData="M68,58 A9,9 0,0 0,79,63 L82,58 L74,55 L73,55 Z" />
+    <path
+        android:fillColor="#4285F4"
+        android:pathData="M79,63 A9,9 0,0 0,85,55 L85,52 L76,52 L76,56 L80,56 L79,58 L73,55 Z" />
+
+    <!-- Transfer arrows -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M43,28 C51,21 60,22 67,29" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,24 L70,29 L63,31 Z" />
+
+    <path
+        android:strokeColor="#22C55E"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M67,61 C63,67 56,69 51,65" />
+    <path
+        android:fillColor="#22C55E"
+        android:pathData="M52,61 L50,66 L56,65 Z" />
+
+    <!-- Back photo card -->
+    <path
+        android:fillColor="#DBEAFE"
+        android:pathData="M34,65 L72,65 C74.76,65 77,67.24 77,70 L77,91 C77,93.76 74.76,96 72,96 L34,96 C31.24,96 29,93.76 29,91 L29,70 C29,67.24 31.24,65 34,65 Z" />
+
+    <!-- Front photo card -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M27,62 L66,62 C68.76,62 71,64.24 71,67 L71,88 C71,90.76 68.76,93 66,93 L27,93 C24.24,93 22,90.76 22,88 L22,67 C22,64.24 24.24,62 27,62 Z" />
+
+    <!-- Photo sky -->
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M27,66 L66,66 C66.55,66 67,66.45 67,67 L67,87 C67,87.55 66.55,88 66,88 L27,88 C26.45,88 26,87.55 26,87 L26,67 C26,66.45 26.45,66 27,66 Z" />
+
+    <!-- Photo sun -->
+    <path
+        android:fillColor="#FBBF24"
+        android:pathData="M58,69 A3.5,3.5 0,1 0,58,76 A3.5,3.5 0,1 0,58,69 Z" />
+
+    <!-- Photo mountains -->
+    <path
+        android:fillColor="#4F46E5"
+        android:pathData="M26,84 L37,74 L43,80 L49,71 L67,88 L26,88 Z" />
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M26,88 L39,79 L46,84 L52,78 L67,88 Z" />
+
 </vector>

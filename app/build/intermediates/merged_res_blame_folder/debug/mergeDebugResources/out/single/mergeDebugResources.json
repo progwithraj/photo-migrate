@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "/Users/IPRIYANATH/.gradle/daemon/9.5.0/com.photomigrate.app-debug-3:/drawable_ic_launcher.xml.flat",
+        "source": "/Users/IPRIYANATH/.gradle/daemon/9.5.0/com.photomigrate.app-main-5:/drawable/ic_launcher.xml"
+    },
+    {
+        "merged": "/Users/IPRIYANATH/.gradle/daemon/9.5.0/com.photomigrate.app-debug-3:/xml_backup_rules.xml.flat",
+        "source": "/Users/IPRIYANATH/.gradle/daemon/9.5.0/com.photomigrate.app-main-5:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "/Users/IPRIYANATH/.gradle/daemon/9.5.0/com.photomigrate.app-debug-3:/xml_data_extraction_rules.xml.flat",
+        "source": "/Users/IPRIYANATH/.gradle/daemon/9.5.0/com.photomigrate.app-main-5:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.photomigrate.app-debug-3:/drawable_ic_launcher.xml.flat",
+        "source": "com.photomigrate.app-main-5:/drawable/ic_launcher.xml"
+    }
+]

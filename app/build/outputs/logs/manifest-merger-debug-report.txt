@@ -1,0 +1,679 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:2:1-52:12
+INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:2:1-52:12
+INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:2:1-52:12
+INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:2:1-52:12
+MERGED from [androidx.work:work-runtime-ktx:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a26278e1c0bd2f79bce37768353aa5e0/transformed/work-runtime-ktx-2.9.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:17:1-145:12
+MERGED from [androidx.navigation:navigation-common:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ba0707aab3c4833652a3273c3d60ae43/transformed/navigation-common-2.7.7/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.navigation:navigation-runtime:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5ff06c0604bf97e67220f62a655d4a18/transformed/navigation-runtime-2.7.7/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.navigation:navigation-common-ktx:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7cc1822725e64fbf65c9ceac52bc1aa4/transformed/navigation-common-ktx-2.7.7/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/0f4287bf4cafaba8f509d997159aa9ea/transformed/navigation-runtime-ktx-2.7.7/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-compose:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/e3ef2c575a1ab8b8879f84c23e8d32e7/transformed/jetified-navigation-compose-2.7.7/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material3:material3-android:1.2.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/e2ea28fbac2f76714b8244938081e195/transformed/jetified-material3-release/AndroidManifest.xml:17:1-22:12
+MERGED from [io.coil-kt:coil-compose:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a733093409109b925276719265ae7bd3/transformed/jetified-coil-compose-2.5.0/AndroidManifest.xml:2:1-7:12
+MERGED from [io.coil-kt:coil-compose-base:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/611ab7ff1242b663a6de233e78a7a027/transformed/jetified-coil-compose-base-2.5.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/6671446a1db54c6b4627dede1ff54fda/transformed/jetified-material-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-icons-core-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/73b38db4a5a4577eb43b961cabd6872b/transformed/jetified-material-icons-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-icons-extended-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c2906687258d63fe2a5a26981a73b370/transformed/jetified-material-icons-extended-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-ripple-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5993ca947a8d993eb650081021d56688/transformed/jetified-material-ripple-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.animation:animation-core-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4dccd7940c8627beb2758596007490d7/transformed/jetified-animation-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.animation:animation-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5d8f10f236e2ed05772ba311fe838de6/transformed/jetified-animation-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/125c65c2aabf7e1813cb3f120600eb89/transformed/jetified-foundation-layout-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.foundation:foundation-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/2099fb06a0263e6a6132104dfad8f02d/transformed/jetified-foundation-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-tooling-data-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/eff6384c0e89db6700df4ea0757b39f8/transformed/jetified-ui-tooling-data-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-unit-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8232288c83a1332d047283fcf8e4a915/transformed/jetified-ui-unit-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-geometry-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/792449d2d2abc9e8c1bd89ad9373c17a/transformed/jetified-ui-geometry-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-util-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/788ff440236139a709e7da7138d3a749/transformed/jetified-ui-util-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ef9502eee3e13f4cfb69cd463d08078e/transformed/jetified-ui-tooling-preview-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.ui:ui-graphics-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/32defa6478c0cdebb33a81eebc8c9273/transformed/jetified-ui-graphics-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-text-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/17c20b98c5ce0f0acd4d0e44d919a865/transformed/jetified-ui-text-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/6138b08828371f7436a62accdb011777/transformed/jetified-lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-service:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/1994178bd30fc15ddc216db8df37f3c8/transformed/jetified-lifecycle-service-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/36797f7228eca4c029f9b41eed4f0acd/transformed/lifecycle-livedata-2.7.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/181153c5802ff6c5b1b7c2784f9aa6d4/transformed/lifecycle-livedata-core-2.7.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/280e66dc0329d9a8fe94bc7e26ff4efd/transformed/jetified-savedstate-ktx-1.2.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.savedstate:savedstate:1.2.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/db340a5ecfc95be9bc1f4f6c7bd41143/transformed/jetified-savedstate-1.2.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c2e03ac31e5f9f2bacf40bd35f5b94d6/transformed/jetified-lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/58c6349bab246b146426a68e714057fd/transformed/jetified-lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/047f97ea04c6cb06e310d28ed3e01c8b/transformed/lifecycle-viewmodel-2.7.0/AndroidManifest.xml:17:1-22:12
+MERGED from [io.coil-kt:coil:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7f5b158f27f76704d277fe31fb9677aa/transformed/jetified-coil-2.5.0/AndroidManifest.xml:2:1-7:12
+MERGED from [io.coil-kt:coil-base:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/95c4bf378b796a6bdb9d005f7269dba5/transformed/jetified-coil-base-2.5.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c1c7efefbd55cae906f962a0cb21e5b1/transformed/lifecycle-runtime-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ef86bf4682f96df3814f6fa9fd2c0f57/transformed/jetified-lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/249065db218395b949ef530c986e912f/transformed/jetified-lifecycle-viewmodel-compose-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [com.google.accompanist:accompanist-drawablepainter:0.32.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/55108a61358fd8c3e127ae9ec0b5f951/transformed/jetified-accompanist-drawablepainter-0.32.0/AndroidManifest.xml:17:1-23:12
+MERGED from [androidx.compose.ui:ui-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7c511c3b5d9edbf36df7081f51fc8247/transformed/jetified-ui-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:17:1-28:12
+MERGED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:17:1-28:12
+MERGED from [androidx.activity:activity-compose:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ebce3aa431228914f167188e4a04fc31/transformed/jetified-activity-compose-1.8.2/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.activity:activity-ktx:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/9d54496d19db048a4dcbce636c9f1765/transformed/jetified-activity-ktx-1.8.2/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.activity:activity:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b396c5fa60756eedb040e5305917e6a7/transformed/jetified-activity-1.8.2/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.autofill:autofill:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4d53593ba1073cecff86c8f788f6dccc/transformed/jetified-autofill-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/71885bc9b699740648ea0135207e7668/transformed/jetified-appcompat-resources-1.6.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3f5f3d0729f152e24957a74de30d28d7/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/1c5e88092a9ea9375a4a76b2e882c33a/transformed/vectordrawable-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ca20b9980efedd3f5e97f58a4c33680c/transformed/jetified-customview-poolingcontainer-1.0.0/AndroidManifest.xml:17:1-23:12
+MERGED from [androidx.core:core-ktx:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/9089b8c46c2a6a62a261777741d30a5e/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:17:1-31:12
+MERGED from [androidx.room:room-ktx:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/57f827a4a332de18fcdc285d5852f894/transformed/jetified-room-ktx-2.8.4/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/0545710f26f0e9262137630cdd8693b5/transformed/jetified-runtime-saveable-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.runtime:runtime-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/aeee4aad1576216cedd2ca039c4b6eed/transformed/jetified-runtime-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.annotation:annotation-experimental:1.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/89917e33766e73f1b039888af71b7d4d/transformed/jetified-annotation-experimental-1.5.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8e07918d8fa66653837d783697006786/transformed/jetified-security-crypto-1.1.0-alpha06/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/d36695f1dddcfc3329c3293c8b29a64c/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/140998e911c4a0006daa59db296a176f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4a5834c1c7cbfb3f4be44d6bd50a92fa/transformed/core-runtime-2.2.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:17:1-55:12
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b8403a9600cba890c9effd70500243e7/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.tracing:tracing:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a39873d74f0895d79468c8d90b229b27/transformed/jetified-tracing-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fd7cd95fd86ca98f70df972db7ab236b/transformed/exifinterface-1.3.6/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.sqlite:sqlite-android:2.6.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b958e96993270227e3bcf9314cc7f4ba/transformed/jetified-sqlite/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.sqlite:sqlite-framework-android:2.6.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/d052f0db83baec37fe5eceb96ff91133/transformed/jetified-sqlite-framework/AndroidManifest.xml:17:1-22:12
+	package
+		INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+	xmlns:tools
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:3:5-51
+	android:versionCode
+		INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:6:5-67
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:6:22-64
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:7:5-79
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:24:5-79
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:24:5-79
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:7:22-76
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:8:5-77
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:26:5-77
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:26:5-77
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:8:22-74
+uses-permission#android.permission.FOREGROUND_SERVICE_DATA_SYNC
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:9:5-87
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:9:22-84
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:10:5-77
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:10:22-74
+uses-permission#android.permission.WAKE_LOCK
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:11:5-68
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:23:5-68
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:23:5-68
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:11:22-65
+application
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:13:5-50:19
+INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:13:5-50:19
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:28:5-143:19
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:28:5-143:19
+MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:22:5-26:19
+MERGED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:28:5-89
+MERGED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:28:5-89
+MERGED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:23:5-29:19
+MERGED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:23:5-29:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/140998e911c4a0006daa59db296a176f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/140998e911c4a0006daa59db296a176f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b8403a9600cba890c9effd70500243e7/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b8403a9600cba890c9effd70500243e7/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+	android:extractNativeLibs
+		INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+	android:supportsRtl
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:20:9-35
+	android:label
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:18:9-41
+	android:fullBackupContent
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:16:9-54
+	android:roundIcon
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:19:9-50
+	tools:targetApi
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:22:9-29
+	android:icon
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:17:9-45
+	android:allowBackup
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:14:9-35
+	android:theme
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:21:9-50
+	android:dataExtractionRules
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:15:9-65
+activity#com.photomigrate.app.MainActivity
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:24:9-42:20
+	android:exported
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:26:13-36
+	android:configChanges
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:28:13-87
+	android:theme
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:27:13-54
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:25:13-61
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:29:13-32:29
+action#android.intent.action.MAIN
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:30:17-69
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:30:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:31:17-77
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:31:27-74
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:scheme:com.googleusercontent.apps.699958644859-gqrjba6g17kualdgr7h1c86stc50r90k
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:35:13-41:29
+action#android.intent.action.VIEW
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:36:17-69
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:36:25-66
+category#android.intent.category.DEFAULT
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:37:17-76
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:37:27-73
+category#android.intent.category.BROWSABLE
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:38:17-78
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:38:27-75
+data
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:39:17-40:113
+	android:scheme
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:40:21-110
+service#androidx.work.impl.foreground.SystemForegroundService
+ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:45:9-48:34
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:53:9-59:35
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:53:9-59:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:56:13-77
+	tools:node
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:48:13-31
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:57:13-37
+	tools:ignore
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:58:13-60
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:59:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:55:13-44
+	android:foregroundServiceType
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:47:13-53
+	android:name
+		ADDED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml:46:13-81
+uses-sdk
+INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+MERGED from [androidx.work:work-runtime-ktx:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a26278e1c0bd2f79bce37768353aa5e0/transformed/work-runtime-ktx-2.9.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.work:work-runtime-ktx:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a26278e1c0bd2f79bce37768353aa5e0/transformed/work-runtime-ktx-2.9.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.navigation:navigation-common:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ba0707aab3c4833652a3273c3d60ae43/transformed/navigation-common-2.7.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-common:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ba0707aab3c4833652a3273c3d60ae43/transformed/navigation-common-2.7.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-runtime:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5ff06c0604bf97e67220f62a655d4a18/transformed/navigation-runtime-2.7.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-runtime:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5ff06c0604bf97e67220f62a655d4a18/transformed/navigation-runtime-2.7.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-common-ktx:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7cc1822725e64fbf65c9ceac52bc1aa4/transformed/navigation-common-ktx-2.7.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-common-ktx:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7cc1822725e64fbf65c9ceac52bc1aa4/transformed/navigation-common-ktx-2.7.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/0f4287bf4cafaba8f509d997159aa9ea/transformed/navigation-runtime-ktx-2.7.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/0f4287bf4cafaba8f509d997159aa9ea/transformed/navigation-runtime-ktx-2.7.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-compose:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/e3ef2c575a1ab8b8879f84c23e8d32e7/transformed/jetified-navigation-compose-2.7.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-compose:2.7.7] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/e3ef2c575a1ab8b8879f84c23e8d32e7/transformed/jetified-navigation-compose-2.7.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material3:material3-android:1.2.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/e2ea28fbac2f76714b8244938081e195/transformed/jetified-material3-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.material3:material3-android:1.2.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/e2ea28fbac2f76714b8244938081e195/transformed/jetified-material3-release/AndroidManifest.xml:20:5-44
+MERGED from [io.coil-kt:coil-compose:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a733093409109b925276719265ae7bd3/transformed/jetified-coil-compose-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-compose:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a733093409109b925276719265ae7bd3/transformed/jetified-coil-compose-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-compose-base:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/611ab7ff1242b663a6de233e78a7a027/transformed/jetified-coil-compose-base-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-compose-base:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/611ab7ff1242b663a6de233e78a7a027/transformed/jetified-coil-compose-base-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/6671446a1db54c6b4627dede1ff54fda/transformed/jetified-material-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/6671446a1db54c6b4627dede1ff54fda/transformed/jetified-material-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/73b38db4a5a4577eb43b961cabd6872b/transformed/jetified-material-icons-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/73b38db4a5a4577eb43b961cabd6872b/transformed/jetified-material-icons-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c2906687258d63fe2a5a26981a73b370/transformed/jetified-material-icons-extended-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c2906687258d63fe2a5a26981a73b370/transformed/jetified-material-icons-extended-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5993ca947a8d993eb650081021d56688/transformed/jetified-material-ripple-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5993ca947a8d993eb650081021d56688/transformed/jetified-material-ripple-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-core-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4dccd7940c8627beb2758596007490d7/transformed/jetified-animation-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-core-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4dccd7940c8627beb2758596007490d7/transformed/jetified-animation-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5d8f10f236e2ed05772ba311fe838de6/transformed/jetified-animation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5d8f10f236e2ed05772ba311fe838de6/transformed/jetified-animation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/125c65c2aabf7e1813cb3f120600eb89/transformed/jetified-foundation-layout-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/125c65c2aabf7e1813cb3f120600eb89/transformed/jetified-foundation-layout-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/2099fb06a0263e6a6132104dfad8f02d/transformed/jetified-foundation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/2099fb06a0263e6a6132104dfad8f02d/transformed/jetified-foundation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-tooling-data-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/eff6384c0e89db6700df4ea0757b39f8/transformed/jetified-ui-tooling-data-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-tooling-data-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/eff6384c0e89db6700df4ea0757b39f8/transformed/jetified-ui-tooling-data-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-unit-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8232288c83a1332d047283fcf8e4a915/transformed/jetified-ui-unit-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-unit-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8232288c83a1332d047283fcf8e4a915/transformed/jetified-ui-unit-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-geometry-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/792449d2d2abc9e8c1bd89ad9373c17a/transformed/jetified-ui-geometry-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-geometry-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/792449d2d2abc9e8c1bd89ad9373c17a/transformed/jetified-ui-geometry-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-util-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/788ff440236139a709e7da7138d3a749/transformed/jetified-ui-util-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-util-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/788ff440236139a709e7da7138d3a749/transformed/jetified-ui-util-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ef9502eee3e13f4cfb69cd463d08078e/transformed/jetified-ui-tooling-preview-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ef9502eee3e13f4cfb69cd463d08078e/transformed/jetified-ui-tooling-preview-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-graphics-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/32defa6478c0cdebb33a81eebc8c9273/transformed/jetified-ui-graphics-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-graphics-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/32defa6478c0cdebb33a81eebc8c9273/transformed/jetified-ui-graphics-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-text-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/17c20b98c5ce0f0acd4d0e44d919a865/transformed/jetified-ui-text-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-text-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/17c20b98c5ce0f0acd4d0e44d919a865/transformed/jetified-ui-text-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/6138b08828371f7436a62accdb011777/transformed/jetified-lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/6138b08828371f7436a62accdb011777/transformed/jetified-lifecycle-livedata-core-ktx-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-service:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/1994178bd30fc15ddc216db8df37f3c8/transformed/jetified-lifecycle-service-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-service:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/1994178bd30fc15ddc216db8df37f3c8/transformed/jetified-lifecycle-service-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/36797f7228eca4c029f9b41eed4f0acd/transformed/lifecycle-livedata-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/36797f7228eca4c029f9b41eed4f0acd/transformed/lifecycle-livedata-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/181153c5802ff6c5b1b7c2784f9aa6d4/transformed/lifecycle-livedata-core-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/181153c5802ff6c5b1b7c2784f9aa6d4/transformed/lifecycle-livedata-core-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/280e66dc0329d9a8fe94bc7e26ff4efd/transformed/jetified-savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/280e66dc0329d9a8fe94bc7e26ff4efd/transformed/jetified-savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/db340a5ecfc95be9bc1f4f6c7bd41143/transformed/jetified-savedstate-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/db340a5ecfc95be9bc1f4f6c7bd41143/transformed/jetified-savedstate-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c2e03ac31e5f9f2bacf40bd35f5b94d6/transformed/jetified-lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c2e03ac31e5f9f2bacf40bd35f5b94d6/transformed/jetified-lifecycle-viewmodel-savedstate-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/58c6349bab246b146426a68e714057fd/transformed/jetified-lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/58c6349bab246b146426a68e714057fd/transformed/jetified-lifecycle-viewmodel-ktx-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/047f97ea04c6cb06e310d28ed3e01c8b/transformed/lifecycle-viewmodel-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/047f97ea04c6cb06e310d28ed3e01c8b/transformed/lifecycle-viewmodel-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [io.coil-kt:coil:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7f5b158f27f76704d277fe31fb9677aa/transformed/jetified-coil-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7f5b158f27f76704d277fe31fb9677aa/transformed/jetified-coil-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-base:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/95c4bf378b796a6bdb9d005f7269dba5/transformed/jetified-coil-base-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-base:2.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/95c4bf378b796a6bdb9d005f7269dba5/transformed/jetified-coil-base-2.5.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c1c7efefbd55cae906f962a0cb21e5b1/transformed/lifecycle-runtime-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/c1c7efefbd55cae906f962a0cb21e5b1/transformed/lifecycle-runtime-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ef86bf4682f96df3814f6fa9fd2c0f57/transformed/jetified-lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ef86bf4682f96df3814f6fa9fd2c0f57/transformed/jetified-lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/249065db218395b949ef530c986e912f/transformed/jetified-lifecycle-viewmodel-compose-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/249065db218395b949ef530c986e912f/transformed/jetified-lifecycle-viewmodel-compose-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [com.google.accompanist:accompanist-drawablepainter:0.32.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/55108a61358fd8c3e127ae9ec0b5f951/transformed/jetified-accompanist-drawablepainter-0.32.0/AndroidManifest.xml:21:5-44
+MERGED from [com.google.accompanist:accompanist-drawablepainter:0.32.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/55108a61358fd8c3e127ae9ec0b5f951/transformed/jetified-accompanist-drawablepainter-0.32.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.compose.ui:ui-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7c511c3b5d9edbf36df7081f51fc8247/transformed/jetified-ui-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7c511c3b5d9edbf36df7081f51fc8247/transformed/jetified-ui-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity-compose:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ebce3aa431228914f167188e4a04fc31/transformed/jetified-activity-compose-1.8.2/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-compose:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ebce3aa431228914f167188e4a04fc31/transformed/jetified-activity-compose-1.8.2/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-ktx:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/9d54496d19db048a4dcbce636c9f1765/transformed/jetified-activity-ktx-1.8.2/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-ktx:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/9d54496d19db048a4dcbce636c9f1765/transformed/jetified-activity-ktx-1.8.2/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b396c5fa60756eedb040e5305917e6a7/transformed/jetified-activity-1.8.2/AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity:1.8.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b396c5fa60756eedb040e5305917e6a7/transformed/jetified-activity-1.8.2/AndroidManifest.xml:20:5-44
+MERGED from [androidx.autofill:autofill:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4d53593ba1073cecff86c8f788f6dccc/transformed/jetified-autofill-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.autofill:autofill:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4d53593ba1073cecff86c8f788f6dccc/transformed/jetified-autofill-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/71885bc9b699740648ea0135207e7668/transformed/jetified-appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/71885bc9b699740648ea0135207e7668/transformed/jetified-appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3f5f3d0729f152e24957a74de30d28d7/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3f5f3d0729f152e24957a74de30d28d7/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/1c5e88092a9ea9375a4a76b2e882c33a/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/1c5e88092a9ea9375a4a76b2e882c33a/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ca20b9980efedd3f5e97f58a4c33680c/transformed/jetified-customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ca20b9980efedd3f5e97f58a4c33680c/transformed/jetified-customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
+MERGED from [androidx.core:core-ktx:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/9089b8c46c2a6a62a261777741d30a5e/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-ktx:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/9089b8c46c2a6a62a261777741d30a5e/transformed/jetified-core-ktx-1.12.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:21:5-44
+MERGED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:21:5-44
+MERGED from [androidx.room:room-ktx:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/57f827a4a332de18fcdc285d5852f894/transformed/jetified-room-ktx-2.8.4/AndroidManifest.xml:20:5-44
+MERGED from [androidx.room:room-ktx:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/57f827a4a332de18fcdc285d5852f894/transformed/jetified-room-ktx-2.8.4/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/0545710f26f0e9262137630cdd8693b5/transformed/jetified-runtime-saveable-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/0545710f26f0e9262137630cdd8693b5/transformed/jetified-runtime-saveable-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/aeee4aad1576216cedd2ca039c4b6eed/transformed/jetified-runtime-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/aeee4aad1576216cedd2ca039c4b6eed/transformed/jetified-runtime-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/89917e33766e73f1b039888af71b7d4d/transformed/jetified-annotation-experimental-1.5.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.5.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/89917e33766e73f1b039888af71b7d4d/transformed/jetified-annotation-experimental-1.5.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8e07918d8fa66653837d783697006786/transformed/jetified-security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
+MERGED from [androidx.security:security-crypto:1.1.0-alpha06] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8e07918d8fa66653837d783697006786/transformed/jetified-security-crypto-1.1.0-alpha06/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/d36695f1dddcfc3329c3293c8b29a64c/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/d36695f1dddcfc3329c3293c8b29a64c/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/140998e911c4a0006daa59db296a176f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/140998e911c4a0006daa59db296a176f/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4a5834c1c7cbfb3f4be44d6bd50a92fa/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/4a5834c1c7cbfb3f4be44d6bd50a92fa/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b8403a9600cba890c9effd70500243e7/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b8403a9600cba890c9effd70500243e7/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.tracing:tracing:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a39873d74f0895d79468c8d90b229b27/transformed/jetified-tracing-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.tracing:tracing:1.0.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/a39873d74f0895d79468c8d90b229b27/transformed/jetified-tracing-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fd7cd95fd86ca98f70df972db7ab236b/transformed/exifinterface-1.3.6/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.exifinterface:exifinterface:1.3.6] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fd7cd95fd86ca98f70df972db7ab236b/transformed/exifinterface-1.3.6/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.sqlite:sqlite-android:2.6.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b958e96993270227e3bcf9314cc7f4ba/transformed/jetified-sqlite/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-android:2.6.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b958e96993270227e3bcf9314cc7f4ba/transformed/jetified-sqlite/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-framework-android:2.6.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/d052f0db83baec37fe5eceb96ff91133/transformed/jetified-sqlite-framework/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-framework-android:2.6.2] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/d052f0db83baec37fe5eceb96ff91133/transformed/jetified-sqlite-framework/AndroidManifest.xml:20:5-44
+	android:targetSdkVersion
+		INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/src/main/AndroidManifest.xml
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:25:5-81
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:25:22-78
+provider#androidx.startup.InitializationProvider
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:29:9-37:20
+MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b8403a9600cba890c9effd70500243e7/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+MERGED from [androidx.startup:startup-runtime:1.1.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b8403a9600cba890c9effd70500243e7/transformed/jetified-startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+	tools:node
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:33:13-31
+	android:authorities
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:31:13-68
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:32:13-37
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:30:13-67
+meta-data#androidx.work.WorkManagerInitializer
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:34:13-36:52
+	android:value
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:36:17-49
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:35:17-68
+service#androidx.work.impl.background.systemalarm.SystemAlarmService
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:39:9-45:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:42:13-72
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:43:13-37
+	tools:ignore
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:44:13-60
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:45:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:41:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:40:13-88
+service#androidx.work.impl.background.systemjob.SystemJobService
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:46:9-52:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:49:13-70
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:50:13-36
+	android:permission
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:51:13-69
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:52:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:48:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:47:13-84
+receiver#androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:61:9-66:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:64:13-35
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:65:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:66:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:63:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:62:13-88
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:67:9-77:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:70:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:71:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:72:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:69:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:68:13-106
+intent-filter#action:name:android.intent.action.ACTION_POWER_CONNECTED+action:name:android.intent.action.ACTION_POWER_DISCONNECTED
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:73:13-76:29
+action#android.intent.action.ACTION_POWER_CONNECTED
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:74:17-87
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:74:25-84
+action#android.intent.action.ACTION_POWER_DISCONNECTED
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:75:17-90
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:75:25-87
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:78:9-88:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:81:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:82:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:83:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:80:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:79:13-104
+intent-filter#action:name:android.intent.action.BATTERY_LOW+action:name:android.intent.action.BATTERY_OKAY
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:84:13-87:29
+action#android.intent.action.BATTERY_OKAY
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:85:17-77
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:85:25-74
+action#android.intent.action.BATTERY_LOW
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:86:17-76
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:86:25-73
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:89:9-99:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:92:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:93:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:94:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:91:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:90:13-104
+intent-filter#action:name:android.intent.action.DEVICE_STORAGE_LOW+action:name:android.intent.action.DEVICE_STORAGE_OK
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:95:13-98:29
+action#android.intent.action.DEVICE_STORAGE_LOW
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:96:17-83
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:96:25-80
+action#android.intent.action.DEVICE_STORAGE_OK
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:97:17-82
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:97:25-79
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:100:9-109:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:103:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:104:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:105:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:102:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:101:13-103
+intent-filter#action:name:android.net.conn.CONNECTIVITY_CHANGE
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:106:13-108:29
+action#android.net.conn.CONNECTIVITY_CHANGE
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:107:17-79
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:107:25-76
+receiver#androidx.work.impl.background.systemalarm.RescheduleReceiver
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:110:9-121:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:113:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:114:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:115:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:112:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:111:13-88
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED+action:name:android.intent.action.TIMEZONE_CHANGED+action:name:android.intent.action.TIME_SET
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:116:13-120:29
+action#android.intent.action.BOOT_COMPLETED
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:117:17-79
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:117:25-76
+action#android.intent.action.TIME_SET
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:118:17-73
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:118:25-70
+action#android.intent.action.TIMEZONE_CHANGED
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:119:17-81
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:119:25-78
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:122:9-131:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:125:13-72
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:126:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:127:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:124:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:123:13-99
+intent-filter#action:name:androidx.work.impl.background.systemalarm.UpdateProxies
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:128:13-130:29
+action#androidx.work.impl.background.systemalarm.UpdateProxies
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:129:17-98
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:129:25-95
+receiver#androidx.work.impl.diagnostics.DiagnosticsReceiver
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:132:9-142:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:135:13-35
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:136:13-36
+	android:permission
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:137:13-57
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:138:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:134:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:133:13-78
+intent-filter#action:name:androidx.work.diagnostics.REQUEST_DIAGNOSTICS
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:139:13-141:29
+action#androidx.work.diagnostics.REQUEST_DIAGNOSTICS
+ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:140:17-88
+	android:name
+		ADDED from [androidx.work:work-runtime:2.9.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/AndroidManifest.xml:140:25-85
+meta-data#androidx.emoji2.text.EmojiCompatInitializer
+ADDED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/b271000aeabc349c31f7a43f4b2894d6/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:30:17-75
+meta-data#androidx.lifecycle.ProcessLifecycleInitializer
+ADDED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.lifecycle:lifecycle-process:2.7.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3d4d9f50874be2047098318cd813c94c/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+activity#androidx.activity.ComponentActivity
+ADDED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:23:9-25:39
+	android:exported
+		ADDED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:25:13-36
+	android:name
+		ADDED from [androidx.compose.ui:ui-test-manifest:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/fee7c4fc1d7be0a471391c326b5be26b/transformed/jetified-ui-test-manifest-1.6.1/AndroidManifest.xml:24:13-63
+activity#androidx.compose.ui.tooling.PreviewActivity
+ADDED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:23:9-25:39
+	android:exported
+		ADDED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:25:13-36
+	android:name
+		ADDED from [androidx.compose.ui:ui-tooling-android:1.6.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/3187ce9892852c44925ac28b32ac42ab/transformed/jetified-ui-tooling-release/AndroidManifest.xml:24:13-71
+permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+permission#com.photomigrate.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+uses-permission#com.photomigrate.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.12.0] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/ea429c15a991b0850712ad27f2ca6554/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+service#androidx.room.MultiInstanceInvalidationService
+ADDED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:24:9-28:63
+	android:exported
+		ADDED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:27:13-37
+	tools:ignore
+		ADDED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:28:13-60
+	android:directBootAware
+		ADDED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:26:13-43
+	android:name
+		ADDED from [androidx.room:room-runtime-android:2.8.4] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/8212e47d309e2feb02d1387157d49342/transformed/jetified-room-runtime/AndroidManifest.xml:25:13-74
+meta-data#androidx.profileinstaller.ProfileInstallerInitializer
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+receiver#androidx.profileinstaller.ProfileInstallReceiver
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+	android:enabled
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+	android:exported
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+	android:permission
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+	android:directBootAware
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+intent-filter#action:name:androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+action#androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+intent-filter#action:name:androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+action#androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+intent-filter#action:name:androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+action#androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+intent-filter#action:name:androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+action#androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5e2f32dbfc607b04e3545e359be856f0/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
