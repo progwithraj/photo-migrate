@@ -38,8 +38,7 @@ class OAuthManager(private val context: Context) {
             "https://www.googleapis.com/auth/userinfo.profile",
             "https://www.googleapis.com/auth/photoslibrary.readonly",
             "https://www.googleapis.com/auth/photoslibrary.appendonly",
-            "https://www.googleapis.com/auth/drive.readonly",
-            "https://www.googleapis.com/auth/drive.file"
+            "https://www.googleapis.com/auth/drive"
         ).joinToString(" ")
     }
 
@@ -309,6 +308,40 @@ class OAuthManager(private val context: Context) {
     fun removeAccount(accountEmail: String) {
         val current = getSavedAccounts().filterNot { it.email.equals(accountEmail, ignoreCase = true) }
         prefs.edit().putString("saved_accounts_json", gson.toJson(current)).apply()
+    }
+
+    /**
+     * Re-fetches only the storage quota for a specific account.
+     */
+    suspend fun refreshStorageQuota(account: GoogleAccount): GoogleAccount? = withContext(Dispatchers.IO) {
+        val validAccount = refreshTokenIfNeededSuspend(account) ?: return@withContext null
+        
+        try {
+            val driveRequest = Request.Builder()
+                .url(ABOUT_ENDPOINT)
+                .addHeader("Authorization", "Bearer ${validAccount.accessToken}")
+                .build()
+                
+            val driveResp = client.newCall(driveRequest).execute()
+            if (driveResp.isSuccessful) {
+                val driveJson = gson.fromJson(driveResp.body?.string(), Map::class.java)
+                val quota = driveJson["storageQuota"] as? Map<*, *>
+                if (quota != null) {
+                    val usedBytes = (quota["usage"] as? String)?.toLongOrNull() ?: validAccount.usedStorageBytes
+                    val totalBytes = (quota["limit"] as? String)?.toLongOrNull() ?: validAccount.totalStorageBytes
+                    
+                    val updatedAccount = validAccount.copy(
+                        usedStorageBytes = usedBytes,
+                        totalStorageBytes = totalBytes
+                    )
+                    saveAccount(updatedAccount)
+                    return@withContext updatedAccount
+                }
+            }
+        } catch (e: Exception) {
+            // Log or ignore
+        }
+        null
     }
 
     // PKCE Helper Functions

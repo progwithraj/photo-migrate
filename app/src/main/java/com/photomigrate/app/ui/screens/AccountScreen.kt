@@ -1,14 +1,22 @@
 package com.photomigrate.app.ui.screens
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -16,7 +24,7 @@ import com.photomigrate.app.data.model.AccountRole
 import com.photomigrate.app.data.model.GoogleAccount
 import com.photomigrate.app.ui.components.AccountCard
 import com.photomigrate.app.ui.components.GlassCard
-import com.photomigrate.app.ui.theme.PrimaryBlue
+import com.photomigrate.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,67 +37,66 @@ fun AccountScreen(
     onAddAccountClick: () -> Unit,
     onOpenSetupGuide: () -> Unit,
     onRemoveAccount: (String) -> Unit,
+    onRefreshAll: () -> Unit,
     onProceedToPicker: () -> Unit
 ) {
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent
+                ),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.CloudSync,
+                            imageVector = Icons.Default.AutoFixHigh,
                             contentDescription = null,
-                            tint = PrimaryBlue,
-                            modifier = Modifier.size(28.dp)
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "PhotoMigrate",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            letterSpacing = (-0.5).sp
                         )
                     }
                 },
                 actions = {
                     IconButton(onClick = onOpenSetupGuide) {
                         Icon(
-                            imageVector = Icons.Default.HelpOutline,
-                            contentDescription = "OAuth Setup Guide"
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
             )
         },
         bottomBar = {
-            Surface(
-                tonalElevation = 8.dp,
-                shadowElevation = 8.dp,
-                modifier = Modifier.fillMaxWidth()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
             ) {
-                Row(
+                Button(
+                    onClick = onProceedToPicker,
+                    enabled = (selectedSourceId != null && selectedDestId != null && selectedSourceId != selectedDestId),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .height(56.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = if (selectedSourceId != null && selectedDestId != null) "Ready to Select Photos" else "Select Source & Target Accounts",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Button(
-                        onClick = onProceedToPicker,
-                        enabled = (selectedSourceId != null && selectedDestId != null && selectedSourceId != selectedDestId),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Text("Next: Choose Media")
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
-                    }
+                    Text("Select Photos", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
                 }
             }
         }
@@ -98,23 +105,23 @@ fun AccountScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(4.dp))
                 // Banner
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Migrate Photos Between Free Accounts",
+                        text = "Migrate Securely",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Running out of free 15 GB storage on one Google account? Connect a second account to move photos over and free up space for $0.00.",
-                        fontSize = 13.sp,
+                        text = "Move your precious memories between accounts without losing quality. Completely free and direct.",
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -127,18 +134,22 @@ fun AccountScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Connected Accounts (${accounts.size})",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        text = "Your Accounts",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 20.sp,
+                        letterSpacing = (-0.3).sp
                     )
 
-                    OutlinedButton(
-                        onClick = onAddAccountClick,
-                        shape = MaterialTheme.shapes.small
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Add Account")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onRefreshAll) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Refresh", modifier = Modifier.size(20.dp))
+                        }
+                        
+                        TextButton(onClick = onAddAccountClick) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Add", fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -164,20 +175,21 @@ fun AccountScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "No Google Accounts Connected",
+                                text = "No Accounts Yet",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = "Tap 'Add Account' to connect your first Google Account.",
+                                text = "Connect your Google accounts to start.",
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = onAddAccountClick) {
-                                Icon(Icons.Default.Add, contentDescription = null)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Connect Google Account")
+                            Button(
+                                onClick = onAddAccountClick,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Connect Now")
                             }
                         }
                     }

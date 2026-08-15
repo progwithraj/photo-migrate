@@ -1,5 +1,6 @@
 package com.photomigrate.app.ui.screens
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -19,7 +21,6 @@ import com.photomigrate.app.data.model.JobStatus
 import com.photomigrate.app.data.model.TransferJob
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.LogItemRow
-import com.photomigrate.app.ui.theme.PrimaryBlue
 import com.photomigrate.app.ui.theme.SuccessGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,13 +36,15 @@ fun TransferScreen(
     val speedKb = (job?.speedBytesPerSec ?: 0L) / 1024L
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
-            TopAppBar(
-                title = { Text("Photo Transfer Progress", fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent),
+                title = { Text("Transfer Engine", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp) },
                 actions = {
                     if (currentStatus == JobStatus.COMPLETED) {
                         TextButton(onClick = onDoneClick) {
-                            Text("Done")
+                            Text("Done", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -52,124 +55,168 @@ fun TransferScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Main Progress Card
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+            // Main Progress Circular Indicator
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.size(200.dp),
+                    strokeWidth = 14.dp,
+                    color = if (currentStatus == JobStatus.COMPLETED) SuccessGreen else MaterialTheme.colorScheme.primary,
+                    trackColor = Color.White.copy(alpha = 0.1f)
+                )
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${(progress * 100).toInt()}%",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 44.sp,
+                        letterSpacing = (-1).sp
+                    )
+                    Text(
+                        text = "${job?.completedItems ?: 0} of ${job?.totalItems ?: 0}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Completion Summary
+            if (currentStatus == JobStatus.COMPLETED) {
+                val totalSizeMb = (job?.transferredBytes ?: 0L) / (1024L * 1024L)
+                val totalSizeGb = totalSizeMb.toDouble() / 1024.0
+                val sizeText = if (totalSizeGb >= 1.0) String.format("%.2f GB", totalSizeGb) else "$totalSizeMb MB"
+                
+                GlassCard(
+                    modifier = Modifier.fillMaxWidth().animateContentSize(),
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(120.dp)
-                    ) {
-                        CircularProgressIndicator(
-                            progress = progress,
-                            modifier = Modifier.fillMaxSize(),
-                            strokeWidth = 10.dp,
-                            color = if (currentStatus == JobStatus.COMPLETED) SuccessGreen else PrimaryBlue,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                        Icon(
+                            imageVector = Icons.Default.AutoFixHigh,
+                            contentDescription = null,
+                            tint = SuccessGreen,
+                            modifier = Modifier.size(48.dp)
                         )
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "${(progress * 100).toInt()}%",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 24.sp
-                            )
-                            Text(
-                                text = "${job?.completedItems ?: 0} / ${job?.totalItems ?: 0}",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Transfer Metrics Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Transfer Speed", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("${speedKb} KB/s", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        }
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Mode", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(job?.mode?.name ?: "MOVE", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        }
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Failed/Skipped", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("${job?.failedItems ?: 0}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Control buttons
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (currentStatus == JobStatus.RUNNING) {
-                            Button(onClick = onPauseClick) {
-                                Icon(Icons.Default.Pause, contentDescription = null)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Pause")
-                            }
-                        } else if (currentStatus == JobStatus.PAUSED) {
-                            Button(onClick = onResumeClick) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = null)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Resume")
-                            }
-                        } else if (currentStatus == JobStatus.COMPLETED) {
-                            Button(onClick = onDoneClick, colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)) {
-                                Icon(Icons.Default.Check, contentDescription = null)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("Transfer Complete")
-                            }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Migration Complete!",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Successfully moved $sizeText of memories.",
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = onDoneClick,
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(25.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+                        ) {
+                            Text("Return to Accounts", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             }
 
-            // Real-Time Log Console
-            Text(
-                text = "Live Activity Log",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(16.dp)),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp),
-                    reverseLayout = true,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+            // Stats Card
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    val logsList = job?.logs?.reversed() ?: emptyList()
-                    items(logsList) { log ->
-                        LogItemRow(log = log)
+                    StatItem(label = "Speed", value = "$speedKb KB/s")
+                    StatItem(label = "Mode", value = job?.mode?.name ?: "MOVE")
+                    StatItem(label = "Failed", value = "${job?.failedItems ?: 0}")
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Controls
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    if (currentStatus == JobStatus.RUNNING) {
+                        Button(
+                            onClick = onPauseClick,
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                        ) {
+                            Icon(Icons.Default.Pause, null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Pause")
+                        }
+                    } else if (currentStatus == JobStatus.PAUSED) {
+                        Button(
+                            onClick = onResumeClick,
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Resume")
+                        }
+                    } else if (currentStatus == JobStatus.COMPLETED) {
+                        Button(
+                            onClick = onDoneClick,
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+                        ) {
+                            Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Finished")
+                        }
+                    }
+                }
+            }
+
+            // Logs Section
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Activity Log",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    color = Color.White.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        reverseLayout = true,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val logsList = job?.logs?.reversed() ?: emptyList()
+                        items(logsList) { log ->
+                            LogItemRow(log = log)
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
     }
 }

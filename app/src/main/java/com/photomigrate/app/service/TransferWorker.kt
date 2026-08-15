@@ -28,6 +28,7 @@ class TransferWorker(
     companion object {
         const val CHANNEL_ID = "photo_migrate_transfer_channel"
         const val NOTIFICATION_ID = 1001
+        const val KEY_JOB_ID = "job_id"
         const val KEY_SOURCE_ACCOUNT_ID = "source_account_id"
         const val KEY_DEST_ACCOUNT_ID = "dest_account_id"
         const val KEY_MODE = "transfer_mode"
@@ -35,9 +36,13 @@ class TransferWorker(
     }
 
     override suspend fun doWork(): Result {
+        val jobId = inputData.getString(KEY_JOB_ID) ?: return Result.failure()
         val sourceId = inputData.getString(KEY_SOURCE_ACCOUNT_ID) ?: return Result.failure()
         val destId = inputData.getString(KEY_DEST_ACCOUNT_ID) ?: return Result.failure()
-        val selectedIds = inputData.getStringArray(KEY_SELECTED_IDS) ?: emptyArray()
+        
+        // Retrieve selected IDs from database instead of inputData to avoid 10KB limit
+        val selectedIds = repository.getQueuedMediaIds(jobId)
+        
         val modeName = inputData.getString(KEY_MODE) ?: TransferMode.COPY.name
         val mode = TransferMode.valueOf(modeName)
 
@@ -49,45 +54,67 @@ class TransferWorker(
         createNotificationChannel()
         setForeground(createForegroundInfo("Preparing photo transfer...", 0, 100))
 
-        // Ensure we have a job object in the repository for the UI to track
-        val allSourceItems = repository.loadSourceMedia(sourceAccount)
-        val selectedItems = allSourceItems.filter { it.id in selectedIds }
+        // INITIALIZE UI IMMEDIATELY
+        repository.forceLog(jobId, "Preparing metadata for ${selectedIds.size} items...")
+
+        // EFFICIENT FETCH
+        val selectedItems = repository.fetchItemsForWorker(sourceAccount, selectedIds)
+        Log.d("TransferWorker", "Fetched ${selectedItems.size} items for processing. Expected: ${selectedIds.size}")
         
         if (selectedItems.isEmpty()) {
-            Log.w("TransferWorker", "No media items found to process.")
+            Log.w("TransferWorker", "No media items found to process or fetched 0 items.")
+            repository.updateJobStatus(JobStatus.FAILED)
+            repository.forceLog(jobId, "Error: Could not retrieve metadata for selected items.", true)
             return Result.success()
         }
 
-        repository.createAndStartJob(sourceAccount, destAccount, mode, selectedItems)
+        // The job was already created in MainActivity, we just start processing.
+        Log.d("TransferWorker", "Job ready. Starting loop...")
 
-        for ((index, item) in selectedItems.withIndex()) {
-            val job = repository.currentJob.value
-            if (job?.status == JobStatus.PAUSED) {
-                while (repository.currentJob.value?.status == JobStatus.PAUSED) {
-                    delay(1000)
+        try {
+            for ((index, item) in selectedItems.withIndex()) {
+                val currentJob = repository.currentJob.value
+                // If a new job was started, this worker should stop.
+                if (currentJob?.id != jobId) {
+                    Log.d("TransferWorker", "Job ID mismatch. Aborting old worker.")
+                    return Result.success()
+                }
+
+                if (currentJob.status == JobStatus.PAUSED) {
+                    while (repository.currentJob.value?.status == JobStatus.PAUSED) {
+                        delay(1000)
+                    }
+                }
+
+                if (repository.currentJob.value?.status == JobStatus.CANCELLED) {
+                    break
+                }
+
+                val progressPercent = ((index + 1) * 100) / selectedItems.size
+                val notificationText = "Syncing ${index + 1}/${selectedItems.size}: ${item.filename}"
+                setForeground(createForegroundInfo(notificationText, progressPercent, 100))
+
+                repository.processNextMediaItem(
+                    sourceAccount = sourceAccount,
+                    destinationAccount = destAccount,
+                    item = item,
+                    mode = mode,
+                    jobId = jobId
+                ) { updatedJob ->
+                    // Update live job state
                 }
             }
-
-            if (repository.currentJob.value?.status == JobStatus.CANCELLED) {
-                break
+            
+            if (repository.currentJob.value?.id == jobId) {
+                repository.updateJobStatus(JobStatus.COMPLETED)
             }
-
-            val progressPercent = ((index + 1) * 100) / selectedItems.size
-            val notificationText = "Syncing ${index + 1}/${selectedItems.size}: ${item.filename}"
-            setForeground(createForegroundInfo(notificationText, progressPercent, 100))
-
-            repository.processNextMediaItem(
-                sourceAccount = sourceAccount,
-                destinationAccount = destAccount,
-                item = item,
-                mode = mode
-            ) { updatedJob ->
-                // Update live job state
-            }
+        } catch (e: Exception) {
+            Log.e("TransferWorker", "Fatal error during loop: ${e.message}", e)
+            repository.updateJobStatus(JobStatus.FAILED)
+            repository.forceLog(jobId, "CRITICAL ERROR: ${e.message}", true)
         }
 
         val finalJob = repository.currentJob.value
-        repository.updateJobStatus(JobStatus.COMPLETED)
         val summaryText = "Completed ${finalJob?.completedItems ?: 0} of ${selectedItems.size} photos."
         showCompletionNotification(summaryText)
 
