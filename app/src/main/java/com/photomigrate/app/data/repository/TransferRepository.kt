@@ -99,6 +99,14 @@ class TransferRepository(private val context: Context) {
             } while (nextToken != null)
             
             Log.d("TransferRepository", "Finished loading media. Total items found: ${allItems.size}")
+            
+            // Background Task: Index destination account to detect duplicates already present
+            if (destinationAccount != null) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    indexDestinationAccount(destinationAccount)
+                }
+            }
+            
             allItems
         } catch (e: Exception) {
             if (e !is CancellationException) {
@@ -169,12 +177,39 @@ class TransferRepository(private val context: Context) {
         val validDest = oauthManager.refreshTokenIfNeededSuspend(destinationAccount) ?: destinationAccount
 
         val startTime = System.currentTimeMillis()
+        
+        // Smart Duplicate Detection Step 0: Check metadata before downloading
+        if (isSmartDuplicate(destinationAccount.id, item)) {
+            addLog(jobId, "SMART SKIP: '${item.filename}' already exists in destination (Matched via Metadata).")
+            item.status = SyncStatus.COMPLETED
+            updateJob(jobId) { it.copy(completedItems = it.completedItems + 1) }
+            _currentJob.value?.let { onProgressUpdate(it) }
+            return@withContext
+        }
+
         addLog(jobId, "Downloading '${item.filename}'...")
         _currentJob.value?.let { onProgressUpdate(it) }
 
+        var lastUpdate = 0L
         // Step 2: Download file to temp cache & compute SHA-256 hash
         val downloadResult = apiService.downloadToTempFile(validSource, item) { readBytes, totalBytes ->
-            // Progress callback during download
+            val now = System.currentTimeMillis()
+            // Throttle UI updates to every 300ms to prevent UI freezing
+            if (now - lastUpdate > 300) {
+                val elapsed = (now - startTime) / 1000L
+                if (elapsed > 0) {
+                    val currentSpeed = (readBytes / elapsed)
+                    updateJob(jobId) { 
+                        val newHistory = (it.speedHistory + currentSpeed).takeLast(200)
+                        it.copy(
+                            speedBytesPerSec = currentSpeed,
+                            speedHistory = newHistory
+                        )
+                    }
+                    _currentJob.value?.let { onProgressUpdate(it) }
+                }
+                lastUpdate = now
+            }
         }
 
         if (downloadResult == null) {
@@ -210,13 +245,30 @@ class TransferRepository(private val context: Context) {
         addLog(jobId, "Uploading '${item.filename}' ($sizeMb MB)...")
         _currentJob.value?.let { onProgressUpdate(it) }
 
+        lastUpdate = 0L
         val uploadResult = apiService.uploadMediaToDestination(
             destinationAccount = validDest,
             file = tempFile,
             filename = item.filename,
             mimeType = item.mimeType
         ) { uploadedBytes, totalBytes ->
-            // Progress callback during upload
+            val now = System.currentTimeMillis()
+            // Throttle UI updates to every 300ms
+            if (now - lastUpdate > 300) {
+                val elapsed = (now - startTime) / 1000L
+                if (elapsed > 0) {
+                    val currentSpeed = (uploadedBytes / elapsed)
+                    updateJob(jobId) { 
+                        val newHistory = (it.speedHistory + currentSpeed).takeLast(200)
+                        it.copy(
+                            speedBytesPerSec = currentSpeed,
+                            speedHistory = newHistory
+                        )
+                    }
+                    _currentJob.value?.let { onProgressUpdate(it) }
+                }
+                lastUpdate = now
+            }
         }
 
         tempFile.delete() // Clean up cache file
@@ -229,10 +281,12 @@ class TransferRepository(private val context: Context) {
             val speed = actualFileSize / elapsedSec
 
             updateJob(jobId) { 
+                val newHistory = (it.speedHistory + speed).takeLast(50)
                 it.copy(
                     completedItems = it.completedItems + 1,
                     transferredBytes = it.transferredBytes + actualFileSize,
-                    speedBytesPerSec = speed
+                    speedBytesPerSec = speed,
+                    speedHistory = newHistory
                 )
             }
 
@@ -246,7 +300,7 @@ class TransferRepository(private val context: Context) {
                     item.status = SyncStatus.TRASHED_FROM_SOURCE
                     addLog(jobId, "FREED STORAGE: '${item.filename}' moved to Trash in source account.")
                 } else {
-                    addLog(jobId, "Notice: Transferred to destination, but could not trash from source. Ensure you have granted full Drive permissions.", isError = true)
+                    addLog(jobId, "Notice: Transferred to destination, but could not trash from source. Ensure you checked the 'Full Drive' permission box during login.", isError = true)
                 }
             }
         } else {
@@ -257,6 +311,60 @@ class TransferRepository(private val context: Context) {
         }
 
         _currentJob.value?.let { onProgressUpdate(it) }
+    }
+
+    /**
+     * Smart Duplicate Detection: Check if a similar file exists in destination account.
+     */
+    suspend fun isSmartDuplicate(accountId: String, item: MediaItem): Boolean {
+        // 1. Exact match by ID (if we moved it ourselves before)
+        val transferredIds = db.transferDao().getTransferredMediaIds(accountId)
+        if (item.id in transferredIds) return true
+        
+        // 2. Metadata match: Filename + Size + CreationTime
+        // Note: size might be 0 for Photos API, so we only match if size > 0
+        val match = db.transferDao().findRemoteMatch(
+            accountId = accountId,
+            filename = item.filename,
+            size = item.sizeBytes,
+            time = item.creationTime
+        )
+        return match != null
+    }
+
+    /**
+     * Index destination account media to create a lookup for Smart Duplicate Detection.
+     */
+    suspend fun indexDestinationAccount(account: GoogleAccount) = withContext(Dispatchers.IO) {
+        try {
+            Log.d("TransferRepository", "Indexing destination account: ${account.email}")
+            val validAccount = oauthManager.refreshTokenIfNeededSuspend(account) ?: account
+            
+            var nextToken: String? = null
+            do {
+                val (items, token) = apiService.listMediaItems(validAccount, pageSize = 100, pageToken = nextToken)
+                
+                val metadata = items.map { 
+                    com.photomigrate.app.data.db.RemoteMetadata(
+                        accountId = account.id,
+                        filename = it.filename,
+                        sizeBytes = it.sizeBytes,
+                        creationTime = it.creationTime
+                    )
+                }
+                
+                db.transferDao().insertRemoteMetadata(metadata)
+                nextToken = token
+                
+                // Limit indexing to 10,000 recent items to keep it fast
+                // or just continue if needed.
+            } while (nextToken != null && !nextToken.startsWith("drive_")) 
+            // We mostly care about Google Photos items for indexing as that's where duplicates happen.
+            
+            Log.d("TransferRepository", "Finished indexing ${account.email}")
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "Indexing failed: ${e.message}")
+        }
     }
 
     fun pauseJob() {

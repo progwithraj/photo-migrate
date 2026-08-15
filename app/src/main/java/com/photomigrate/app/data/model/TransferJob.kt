@@ -35,11 +35,19 @@ data class TransferJob(
     val totalBytes: Long = 0L,
     val transferredBytes: Long = 0L,
     val speedBytesPerSec: Long = 0L,
+    val speedHistory: List<Long> = emptyList(), // History for trend line
     val status: JobStatus = JobStatus.IDLE,
     val logs: List<TransferLog> = emptyList()
 ) {
     val progress: Float
-        get() = if (totalItems > 0) completedItems.toFloat() / totalItems.toFloat() else 0f
+        get() = if (totalItems > 0) (completedItems.toFloat() / totalItems.toFloat()).coerceIn(0f, 1f) else 0f
+
+    val remainingTimeMillis: Long
+        get() {
+            if (speedBytesPerSec <= 0) return 0L
+            val remainingBytes = totalBytes - transferredBytes
+            return (remainingBytes * 1000L) / speedBytesPerSec
+        }
 
     val bytesProgress: Float
         get() = if (totalBytes > 0) (transferredBytes.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f) else 0f

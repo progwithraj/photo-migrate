@@ -17,6 +17,14 @@ data class QueuedItem(
     val mediaId: String
 )
 
+@Entity(tableName = "remote_metadata", primaryKeys = ["accountId", "filename", "sizeBytes", "creationTime"])
+data class RemoteMetadata(
+    val accountId: String,
+    val filename: String,
+    val sizeBytes: Long,
+    val creationTime: String
+)
+
 @Dao
 interface TransferDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -39,9 +47,18 @@ interface TransferDao {
 
     @Query("DELETE FROM transfer_queue WHERE jobId = :jobId")
     suspend fun clearQueue(jobId: String)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertRemoteMetadata(items: List<RemoteMetadata>)
+
+    @Query("SELECT * FROM remote_metadata WHERE accountId = :accountId AND filename = :filename AND sizeBytes = :size AND creationTime = :time LIMIT 1")
+    suspend fun findRemoteMatch(accountId: String, filename: String, size: Long, time: String): RemoteMetadata?
+
+    @Query("DELETE FROM remote_metadata WHERE accountId = :accountId")
+    suspend fun clearRemoteMetadata(accountId: String)
 }
 
-@Database(entities = [TransferredFile::class, QueuedItem::class], version = 2, exportSchema = false)
+@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class], version = 3, exportSchema = false)
 abstract class TransferDatabase : RoomDatabase() {
     abstract fun transferDao(): TransferDao
 
