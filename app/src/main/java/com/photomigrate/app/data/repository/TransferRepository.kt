@@ -125,17 +125,19 @@ class TransferRepository(private val context: Context) {
         sourceAccount: GoogleAccount,
         destinationAccount: GoogleAccount,
         mode: TransferMode,
+        isCompressed: Boolean,
         selectedItems: List<MediaItem>
     ): TransferJob = withContext(Dispatchers.IO) {
         val job = TransferJob(
             sourceAccountId = sourceAccount.id,
             destinationAccountId = destinationAccount.id,
             mode = mode,
+            isCompressionEnabled = isCompressed,
             selectedMediaIds = selectedItems.map { it.id },
             totalItems = selectedItems.size,
             totalBytes = selectedItems.sumOf { it.sizeBytes },
             status = JobStatus.RUNNING,
-            logs = listOf(TransferLog(message = "Job initialized: ${selectedItems.size} items queued for ${mode.name} mode."))
+            logs = listOf(TransferLog(message = "Job initialized: ${selectedItems.size} items queued for ${mode.name} mode (Storage Saver: $isCompressed)."))
         )
         
         // Persist queue to database to bypass WorkManager data limits
@@ -170,6 +172,7 @@ class TransferRepository(private val context: Context) {
         item: MediaItem,
         mode: TransferMode,
         jobId: String,
+        isCompressed: Boolean = false,
         onProgressUpdate: (TransferJob) -> Unit
     ) = withContext(Dispatchers.IO) {
         // Step 1: Ensure OAuth Tokens are valid
@@ -221,10 +224,19 @@ class TransferRepository(private val context: Context) {
             return@withContext
         }
 
-        val (tempFile, hash) = downloadResult
-        val actualFileSize = tempFile.length()
+        val (origFile, hash) = downloadResult
+        
+        // Storage Saver Optimization: Compress image before upload
+        val fileToUpload = if (isCompressed && item.mimeType.startsWith("image/")) {
+            addLog(jobId, "Optimizing '${item.filename}' (Storage Saver)...")
+            com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.mimeType) ?: origFile
+        } else {
+            origFile
+        }
 
-        // Step 3: Check Deduplication
+        val actualFileSize = fileToUpload.length()
+
+        // Step 3: Check Deduplication (Always use original file hash for duplicate detection)
         if (isDuplicateHash(validDest.id, hash)) {
             item.status = SyncStatus.COMPLETED
             markTransferred(item.id, validDest.id, hash)
@@ -235,7 +247,8 @@ class TransferRepository(private val context: Context) {
                 ) 
             }
             addLog(jobId, "SKIPPED: '${item.filename}' (Already exists in destination).")
-            tempFile.delete()
+            origFile.delete()
+            if (fileToUpload != origFile) fileToUpload.delete()
             _currentJob.value?.let { onProgressUpdate(it) }
             return@withContext
         }
@@ -248,7 +261,7 @@ class TransferRepository(private val context: Context) {
         lastUpdate = 0L
         val uploadResult = apiService.uploadMediaToDestination(
             destinationAccount = validDest,
-            file = tempFile,
+            file = fileToUpload,
             filename = item.filename,
             mimeType = item.mimeType
         ) { uploadedBytes, totalBytes ->
@@ -271,7 +284,8 @@ class TransferRepository(private val context: Context) {
             }
         }
 
-        tempFile.delete() // Clean up cache file
+        origFile.delete() // Clean up original cache file
+        if (fileToUpload != origFile) fileToUpload.delete() // Clean up compressed file
 
         if (uploadResult != null) {
             markTransferred(item.id, validDest.id, hash)

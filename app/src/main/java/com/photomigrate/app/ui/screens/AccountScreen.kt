@@ -60,7 +60,8 @@ fun AccountScreen(
                             text = "PhotoMigrate",
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 22.sp,
-                            letterSpacing = (-0.5).sp
+                            letterSpacing = (-0.5).sp,
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 },
@@ -90,7 +91,7 @@ fun AccountScreen(
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
                 ) {
@@ -137,7 +138,8 @@ fun AccountScreen(
                         text = "Your Accounts",
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 20.sp,
-                        letterSpacing = (-0.3).sp
+                        letterSpacing = (-0.3).sp,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     Row(verticalAlignment = Alignment.CenterVertically) {

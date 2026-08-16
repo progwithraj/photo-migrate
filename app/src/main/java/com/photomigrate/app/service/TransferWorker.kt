@@ -94,12 +94,15 @@ class TransferWorker(
                 val notificationText = "Syncing ${index + 1}/${selectedItems.size}: ${item.filename}"
                 setForeground(createForegroundInfo(notificationText, progressPercent, 100))
 
+                val isCompressed = inputData.getBoolean("is_compressed", false)
+
                 repository.processNextMediaItem(
                     sourceAccount = sourceAccount,
                     destinationAccount = destAccount,
                     item = item,
                     mode = mode,
-                    jobId = jobId
+                    jobId = jobId,
+                    isCompressed = isCompressed
                 ) { updatedJob ->
                     // Update live job state
                 }

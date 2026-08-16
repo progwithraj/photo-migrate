@@ -33,6 +33,11 @@ class OAuthManager(private val context: Context) {
         const val USERINFO_ENDPOINT = "https://www.googleapis.com/oauth2/v2/userinfo"
         const val ABOUT_ENDPOINT = "https://www.googleapis.com/drive/v3/about?fields=storageQuota,user"
 
+        const val PREF_OPTIMIZATION = "transfer_optimization_pref"
+        const val OPT_ASK = "ASK"
+        const val OPT_YES = "YES"
+        const val OPT_NO = "NO"
+
         val SCOPES = listOf(
             "https://www.googleapis.com/auth/userinfo.email",
             "https://www.googleapis.com/auth/userinfo.profile",
@@ -54,6 +59,12 @@ class OAuthManager(private val context: Context) {
             .putString("custom_client_id", clientId.trim())
             .putString("custom_client_secret", clientSecret.trim())
             .apply()
+    }
+
+    fun getOptimizationPreference(): String = prefs.getString(PREF_OPTIMIZATION, OPT_ASK) ?: OPT_ASK
+
+    fun setOptimizationPreference(pref: String) {
+        prefs.edit().putString(PREF_OPTIMIZATION, pref).apply()
     }
 
     fun generateAuthUrl(): String {

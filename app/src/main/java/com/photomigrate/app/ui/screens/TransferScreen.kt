@@ -97,7 +97,8 @@ fun TransferScreen(
                         text = "${(progress * 100).toInt()}%",
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 44.sp,
-                        letterSpacing = (-1).sp
+                        letterSpacing = (-1).sp,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "${job?.completedItems ?: 0} of ${job?.totalItems ?: 0}",
@@ -149,7 +150,10 @@ fun TransferScreen(
                             onClick = onDoneClick,
                             modifier = Modifier.fillMaxWidth().height(50.dp),
                             shape = RoundedCornerShape(25.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = statusColor)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = statusColor,
+                                contentColor = Color.White // SuccessGreen/ErrorRed usually contrast with white
+                            )
                         ) {
                             Text(if (isSuccess) "Return to Accounts" else "Retry / Go Back", fontWeight = FontWeight.Bold)
                         }
@@ -204,7 +208,10 @@ fun TransferScreen(
                             Button(
                                 onClick = onResumeClick,
                                 shape = RoundedCornerShape(24.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
                             ) {
                                 Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -224,7 +231,10 @@ fun TransferScreen(
                         Button(
                             onClick = onDoneClick,
                             shape = RoundedCornerShape(24.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = SuccessGreen,
+                                contentColor = Color.White
+                            )
                         ) {
                             Icon(Icons.Default.Check, null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
@@ -240,7 +250,8 @@ fun TransferScreen(
                     text = "Activity Log",
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 18.sp,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Surface(
@@ -327,6 +338,6 @@ fun NetworkSpeedGraph(
 fun StatItem(label: String, value: String) {
     Column {
         Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
-        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+        Text(value, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }

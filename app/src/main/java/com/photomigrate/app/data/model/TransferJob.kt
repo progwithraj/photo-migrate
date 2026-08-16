@@ -28,6 +28,7 @@ data class TransferJob(
     val sourceAccountId: String,
     val destinationAccountId: String,
     val mode: TransferMode = TransferMode.COPY,
+    val isCompressionEnabled: Boolean = false, // Storage Saver Optimization
     val selectedMediaIds: List<String> = emptyList(),
     val totalItems: Int = 0,
     val completedItems: Int = 0,

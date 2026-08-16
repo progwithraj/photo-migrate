@@ -129,22 +129,23 @@ class MainActivity : ComponentActivity() {
                                 MediaPickerScreen(
                                     mediaItems = sourceMediaList,
                                     isLoading = isLoadingMedia,
+                                    optimizationPreference = oauthManager.getOptimizationPreference(),
                                     onBackClick = { navController.popBackStack() },
-                                    onStartTransfer = { mode, selectedItems ->
+                                    onStartTransfer = { mode, isCompressed, selectedItems ->
                                         val sourceAcc = accounts.find { it.id == selectedSourceId }
                                         val destAcc = accounts.find { it.id == selectedDestId }
 
                                         if (sourceAcc != null && destAcc != null) {
                                             lifecycleScope.launch {
-                                                val job = repository.createAndStartJob(sourceAcc, destAcc, mode, selectedItems)
+                                                val job = repository.createAndStartJob(sourceAcc, destAcc, mode, isCompressed, selectedItems)
 
                                                 // Enqueue WorkManager background worker
-                                                // Pass only Job ID to bypass WorkManager data limits
                                                 val workData = Data.Builder()
                                                     .putString(TransferWorker.KEY_JOB_ID, job.id)
                                                     .putString(TransferWorker.KEY_SOURCE_ACCOUNT_ID, sourceAcc.id)
                                                     .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destAcc.id)
                                                     .putString(TransferWorker.KEY_MODE, mode.name)
+                                                    .putBoolean("is_compressed", isCompressed)
                                                     .build()
 
                                                 val workRequest = OneTimeWorkRequestBuilder<TransferWorker>()
