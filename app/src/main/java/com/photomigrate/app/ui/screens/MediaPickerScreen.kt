@@ -1,7 +1,6 @@
 package com.photomigrate.app.ui.screens
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.photomigrate.app.data.auth.OAuthManager
 import com.photomigrate.app.data.model.MediaItem
 import com.photomigrate.app.data.model.TransferMode
+import com.photomigrate.app.data.model.OrganizationMode
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.MediaItemGridCard
 
@@ -33,17 +33,29 @@ fun MediaPickerScreen(
     optimizationPreference: String = OAuthManager.OPT_ASK,
     aiOrgEnabled: Boolean = false,
     onBackClick: () -> Unit,
-    onStartTransfer: (TransferMode, Boolean, com.photomigrate.app.data.model.OrganizationMode, List<MediaItem>) -> Unit
+    onStartTransfer: (TransferMode, Boolean, OrganizationMode, List<MediaItem>) -> Unit
 ) {
     var selectedIds by remember { mutableStateOf(emptySet<String>()) }
     var selectedMode by remember { mutableStateOf(TransferMode.MOVE) }
     var batchSize by remember { mutableStateOf(100) }
     
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabTitles = listOf("Images", "Videos")
+
     var showQualityDialog by remember { mutableStateOf(false) }
-    var selectedOrgMode by remember { mutableStateOf(com.photomigrate.app.data.model.OrganizationMode.NONE) }
+    var selectedOrgMode by remember { mutableStateOf(OrganizationMode.NONE) }
+
+    val filteredMediaItems = remember(mediaItems, selectedTabIndex) {
+        if (selectedTabIndex == 0) {
+            mediaItems.filter { it.mimeType.startsWith("image/") }
+        } else {
+            mediaItems.filter { it.mimeType.startsWith("video/") }
+        }
+    }
 
     val totalSelectedCount = selectedIds.size
-    val allSelected = totalSelectedCount > 0 && totalSelectedCount == mediaItems.size
+    val currentTabSelectedCount = filteredMediaItems.count { it.id in selectedIds }
+    val allInTabSelected = filteredMediaItems.isNotEmpty() && currentTabSelectedCount == filteredMediaItems.size
 
     if (showQualityDialog) {
         AlertDialog(
@@ -56,16 +68,16 @@ fun MediaPickerScreen(
                     if (aiOrgEnabled) {
                         Text("AI Organization", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                         
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.NONE }) {
-                            RadioButton(selected = selectedOrgMode == com.photomigrate.app.data.model.OrganizationMode.NONE, onClick = { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.NONE })
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = OrganizationMode.NONE }) {
+                            RadioButton(selected = selectedOrgMode == OrganizationMode.NONE, onClick = { selectedOrgMode = OrganizationMode.NONE })
                             Text("Original Library (No Sorting)", fontSize = 14.sp)
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_DATE }) {
-                            RadioButton(selected = selectedOrgMode == com.photomigrate.app.data.model.OrganizationMode.BY_DATE, onClick = { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_DATE })
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = OrganizationMode.BY_DATE }) {
+                            RadioButton(selected = selectedOrgMode == OrganizationMode.BY_DATE, onClick = { selectedOrgMode = OrganizationMode.BY_DATE })
                             Text("Group by Date (e.g. Aug 2026)", fontSize = 14.sp)
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_CONTENT }) {
-                            RadioButton(selected = selectedOrgMode == com.photomigrate.app.data.model.OrganizationMode.BY_CONTENT, onClick = { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_CONTENT })
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = OrganizationMode.BY_CONTENT }) {
+                            RadioButton(selected = selectedOrgMode == OrganizationMode.BY_CONTENT, onClick = { selectedOrgMode = OrganizationMode.BY_CONTENT })
                             Text("Smart AI Grouping (Nature, Pets...)", fontSize = 14.sp)
                         }
                         
@@ -104,45 +116,74 @@ fun MediaPickerScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
-                ),
-                title = { 
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            "Select Items",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 20.sp,
-                            letterSpacing = (-0.5).sp
-                        )
-                        if (isLoading) {
+            Column {
+                CenterAlignedTopAppBar(
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = Color.Transparent
+                    ),
+                    title = { 
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                "Scanning... (${mediaItems.size})",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
+                                "Select Items",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 20.sp,
+                                letterSpacing = (-0.5).sp,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            if (isLoading) {
+                                Text(
+                                    "Scanning... (${mediaItems.size})",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.Default.Close, contentDescription = "Cancel", tint = MaterialTheme.colorScheme.onBackground)
+                        }
+                    },
+                    actions = {
+                        TextButton(onClick = {
+                            val currentTabIds = filteredMediaItems.map { it.id }.toSet()
+                            selectedIds = if (allInTabSelected) {
+                                selectedIds - currentTabIds
+                            } else {
+                                selectedIds + currentTabIds
+                            }
+                        }) {
+                            Text(
+                                text = if (allInTabSelected) "None" else "All",
+                                fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.Close, contentDescription = "Cancel")
-                    }
-                },
-                actions = {
-                    TextButton(onClick = {
-                        selectedIds = if (allSelected) emptySet() else mediaItems.map { it.id }.toSet()
-                    }) {
-                        Text(
-                            text = if (allSelected) "None" else "All",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                )
+                
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    divider = {}
+                ) {
+                    tabTitles.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTabIndex == index,
+                            onClick = { selectedTabIndex = index },
+                            text = { 
+                                Text(
+                                    title, 
+                                    fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (selectedTabIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                ) 
+                            }
                         )
                     }
                 }
-            )
+            }
         },
         bottomBar = {
             GlassCard(
@@ -157,7 +198,7 @@ fun MediaPickerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text("Batch Size", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Batch Size", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             listOf(100, 500, 1000).forEach { size ->
@@ -172,7 +213,7 @@ fun MediaPickerScreen(
                     }
 
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("Mode", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("Mode", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             FilterChip(
@@ -196,13 +237,9 @@ fun MediaPickerScreen(
                 Button(
                     onClick = { 
                         val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
-                        // Show popup if:
-                        // 1. User needs to pick quality (ASK)
-                        // 2. User HAS enabled AI features in settings (they need to pick organization)
                         if (optimizationPreference == OAuthManager.OPT_ASK || aiOrgEnabled) {
                             showQualityDialog = true
                         } else {
-                            // Fast transfer using settings defaults
                             val isCompressed = optimizationPreference == OAuthManager.OPT_YES
                             onStartTransfer(selectedMode, isCompressed, selectedOrgMode, itemsToTransfer)
                         }
@@ -226,13 +263,14 @@ fun MediaPickerScreen(
                 
                 TextButton(
                     onClick = {
-                        selectedIds = mediaItems.take(batchSize).map { it.id }.toSet()
+                        val currentTabIds = filteredMediaItems.take(batchSize).map { it.id }.toSet()
+                        selectedIds = selectedIds + currentTabIds
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    Icon(Icons.Default.AutoFixHigh, null, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.AutoFixHigh, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Auto-Select Next $batchSize", fontWeight = FontWeight.Bold)
+                    Text("Auto-Select Next $batchSize", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
@@ -242,11 +280,11 @@ fun MediaPickerScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (isLoading && mediaItems.isEmpty()) {
+            if (isLoading && filteredMediaItems.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
-            } else if (mediaItems.isEmpty() && !isLoading) {
+            } else if (filteredMediaItems.isEmpty() && !isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -254,7 +292,7 @@ fun MediaPickerScreen(
                 ) {
                     Icon(Icons.Default.PhotoLibrary, null, modifier = Modifier.size(64.dp), tint = Color.Gray)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("No Photos Found", fontWeight = FontWeight.Bold)
+                    Text("No ${tabTitles[selectedTabIndex]} Found", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                 }
             } else {
                 LazyVerticalGrid(
@@ -264,7 +302,7 @@ fun MediaPickerScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(mediaItems, key = { it.id }) { item ->
+                    items(filteredMediaItems, key = { it.id }) { item ->
                         val isSelected = selectedIds.contains(item.id)
                         MediaItemGridCard(
                             item = item.copy(isSelected = isSelected),
