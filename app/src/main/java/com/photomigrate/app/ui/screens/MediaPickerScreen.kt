@@ -12,9 +12,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +29,7 @@ import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.data.model.OrganizationMode
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.MediaItemGridCard
+import com.photomigrate.app.ui.components.PremiumLoader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +50,8 @@ fun MediaPickerScreen(
 
     var showQualityDialog by remember { mutableStateOf(false) }
     var selectedOrgMode by remember { mutableStateOf(OrganizationMode.NONE) }
+
+    val gridState = rememberLazyGridState()
 
     val filteredMediaItems = remember(mediaItems, selectedTabIndex) {
         if (selectedTabIndex == 0) {
@@ -282,7 +290,7 @@ fun MediaPickerScreen(
         ) {
             if (isLoading && filteredMediaItems.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    PremiumLoader()
                 }
             } else if (filteredMediaItems.isEmpty() && !isLoading) {
                 Column(
@@ -296,8 +304,21 @@ fun MediaPickerScreen(
                 }
             } else {
                 LazyVerticalGrid(
+                    state = gridState,
                     columns = GridCells.Fixed(3),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    if (event.type == PointerEventType.Scroll) {
+                                        val scrollAmount = event.changes.first().scrollDelta.y
+                                        gridState.dispatchRawDelta(scrollAmount * 150f)
+                                    }
+                                }
+                            }
+                        },
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)

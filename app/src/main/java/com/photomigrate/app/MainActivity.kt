@@ -7,16 +7,18 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
@@ -66,170 +68,201 @@ class MainActivity : ComponentActivity() {
                         val isLoadingMedia by repository.isLoadingMedia.collectAsState()
                         val currentJob by repository.currentJob.collectAsState()
 
-                        NavHost(navController = navController, startDestination = "accounts") {
-                            composable("accounts") {
-                                AccountScreen(
-                                    accounts = accounts,
-                                    selectedSourceId = selectedSourceId,
-                                    selectedDestId = selectedDestId,
-                                    onSelectSourceAccount = { id ->
-                                        if (id == selectedDestId) {
-                                            // Swap logic: if selecting current destination as source, 
-                                            // make current source the new destination
-                                            selectedDestId = selectedSourceId
-                                        }
-                                        selectedSourceId = id
-                                    },
-                                    onSelectDestAccount = { id ->
-                                        if (id == selectedSourceId) {
-                                            // Swap logic: if selecting current source as destination,
-                                            // make current destination the new source
-                                            selectedSourceId = selectedDestId
-                                        }
-                                        selectedDestId = id
-                                    },
-                                    onAddAccountClick = {
-                                        val authUrl = oauthManager.generateAuthUrl()
-                                        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(authUrl))
-                                        startActivity(browserIntent)
-                                    },
-                                    onOpenSetupGuide = { navController.navigate("settings") },
-                                    onOpenHistory = { navController.navigate("history") },
-                                    onRemoveAccount = { email ->
-                                        oauthManager.removeAccount(email)
-                                        accounts = oauthManager.getSavedAccounts()
-                                        if (selectedSourceId == accounts.find { it.email == email }?.id) selectedSourceId = null
-                                        if (selectedDestId == accounts.find { it.email == email }?.id) selectedDestId = null
-                                    },
-                                    onRefreshAll = {
-                                        lifecycleScope.launch {
-                                            val currentAccs = oauthManager.getSavedAccounts()
-                                            coroutineScope {
-                                                currentAccs.map { account ->
-                                                    async { oauthManager.refreshStorageQuota(account) }
-                                                }.awaitAll()
-                                            }
-                                            accounts = oauthManager.getSavedAccounts()
-                                            Toast.makeText(this@MainActivity, "Storage usage updated!", Toast.LENGTH_SHORT).show()
-                                        }
-                                    },
-                                    onProceedToPicker = {
-                                        val sourceAccount = accounts.find { it.id == selectedSourceId }
-                                        val destAccount = accounts.find { it.id == selectedDestId }
-                                        if (sourceAccount != null) {
-                                            // Load media in background
-                                            lifecycleScope.launch {
-                                                val result = repository.loadSourceMedia(sourceAccount, destAccount)
-                                                if (result.isEmpty()) {
-                                                    Toast.makeText(this@MainActivity, "No photos found or connection error.", Toast.LENGTH_LONG).show()
+                        var currentTab by remember { mutableIntStateOf(0) } // 0: Migrate, 1: Explore
+
+                        Scaffold(
+                            containerColor = Color.Transparent,
+                            bottomBar = {
+                                val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                                if (currentRoute == "home") {
+                                    NavigationBar(
+                                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                                        modifier = Modifier.height(80.dp)
+                                    ) {
+                                        NavigationBarItem(
+                                            selected = currentTab == 0,
+                                            onClick = { currentTab = 0 },
+                                            icon = { Icon(Icons.Default.SyncAlt, null) },
+                                            label = { Text("Migrate") }
+                                        )
+                                        NavigationBarItem(
+                                            selected = currentTab == 1,
+                                            onClick = { currentTab = 1 },
+                                            icon = { Icon(Icons.Default.Explore, null) },
+                                            label = { Text("Explore") }
+                                        )
+                                    }
+                                }
+                            }
+                        ) { mainPadding ->
+                            NavHost(navController = navController, startDestination = "home", modifier = Modifier.padding(mainPadding)) {
+                                composable("home") {
+                                    if (currentTab == 0) {
+                                        AccountScreen(
+                                            accounts = accounts,
+                                            selectedSourceId = selectedSourceId,
+                                            selectedDestId = selectedDestId,
+                                            onSelectSourceAccount = { id ->
+                                                if (id == selectedDestId) {
+                                                    selectedDestId = selectedSourceId
+                                                }
+                                                selectedSourceId = id
+                                            },
+                                            onSelectDestAccount = { id ->
+                                                if (id == selectedSourceId) {
+                                                    selectedSourceId = selectedDestId
+                                                }
+                                                selectedDestId = id
+                                            },
+                                            onAddAccountClick = {
+                                                val authUrl = oauthManager.generateAuthUrl()
+                                                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(authUrl))
+                                                startActivity(browserIntent)
+                                            },
+                                            onOpenSetupGuide = { navController.navigate("settings") },
+                                            onOpenHistory = { navController.navigate("history") },
+                                            onRemoveAccount = { email ->
+                                                oauthManager.removeAccount(email)
+                                                accounts = oauthManager.getSavedAccounts()
+                                                if (selectedSourceId == accounts.find { it.email == email }?.id) selectedSourceId = null
+                                                if (selectedDestId == accounts.find { it.email == email }?.id) selectedDestId = null
+                                            },
+                                            onRefreshAll = {
+                                                lifecycleScope.launch {
+                                                    val currentAccs = oauthManager.getSavedAccounts()
+                                                    coroutineScope {
+                                                        currentAccs.map { account ->
+                                                            async { oauthManager.refreshStorageQuota(account) }
+                                                        }.awaitAll()
+                                                    }
+                                                    accounts = oauthManager.getSavedAccounts()
+                                                    Toast.makeText(this@MainActivity, "Storage usage updated!", Toast.LENGTH_SHORT).show()
+                                                }
+                                            },
+                                            onProceedToPicker = {
+                                                val sourceAccount = accounts.find { it.id == selectedSourceId }
+                                                val destAccount = accounts.find { it.id == selectedDestId }
+                                                if (sourceAccount != null) {
+                                                    lifecycleScope.launch {
+                                                        val result = repository.loadSourceMedia(sourceAccount, destAccount)
+                                                        if (result.isEmpty()) {
+                                                            Toast.makeText(this@MainActivity, "No photos found or connection error.", Toast.LENGTH_LONG).show()
+                                                        }
+                                                    }
+                                                    navController.navigate("picker")
                                                 }
                                             }
-                                            navController.navigate("picker")
-                                        }
+                                        )
+                                    } else {
+                                        MediaExplorerScreen(
+                                            accounts = accounts,
+                                            onFetchMedia = { account ->
+                                                repository.loadMediaForExplorer(account, limit = 500)
+                                            }
+                                        )
                                     }
-                                )
-                            }
+                                }
 
-                            composable("picker") {
-                                MediaPickerScreen(
-                                    mediaItems = sourceMediaList,
-                                    isLoading = isLoadingMedia,
-                                    optimizationPreference = oauthManager.getOptimizationPreference(),
-                                    aiOrgEnabled = oauthManager.isAiOrgEnabled(),
-                                    onBackClick = { navController.popBackStack() },
-                                    onStartTransfer = { mode, isCompressed, orgMode, selectedItems ->
-                                        val sourceAcc = accounts.find { it.id == selectedSourceId }
-                                        val destAcc = accounts.find { it.id == selectedDestId }
 
-                                        if (sourceAcc != null && destAcc != null) {
+                                composable("picker") {
+                                    MediaPickerScreen(
+                                        mediaItems = sourceMediaList,
+                                        isLoading = isLoadingMedia,
+                                        optimizationPreference = oauthManager.getOptimizationPreference(),
+                                        aiOrgEnabled = oauthManager.isAiOrgEnabled(),
+                                        onBackClick = { navController.popBackStack() },
+                                        onStartTransfer = { mode, isCompressed, orgMode, selectedItems ->
+                                            val sourceAcc = accounts.find { it.id == selectedSourceId }
+                                            val destAcc = accounts.find { it.id == selectedDestId }
+
+                                            if (sourceAcc != null && destAcc != null) {
+                                                lifecycleScope.launch {
+                                                    val job = repository.createAndStartJob(sourceAcc, destAcc, mode, isCompressed, orgMode, selectedItems)
+
+                                                    // Enqueue WorkManager background worker
+                                                    val workData = Data.Builder()
+                                                        .putString(TransferWorker.KEY_JOB_ID, job.id)
+                                                        .putString(TransferWorker.KEY_SOURCE_ACCOUNT_ID, sourceAcc.id)
+                                                        .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destAcc.id)
+                                                        .putString(TransferWorker.KEY_MODE, mode.name)
+                                                        .putBoolean("is_compressed", isCompressed)
+                                                        .putString("org_mode", orgMode.name)
+                                                        .build()
+
+                                                    val workRequest = OneTimeWorkRequestBuilder<TransferWorker>()
+                                                        .setInputData(workData)
+                                                        .build()
+
+                                                    WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+                                                        "photo_transfer_work",
+                                                        androidx.work.ExistingWorkPolicy.REPLACE,
+                                                        workRequest
+                                                    )
+
+                                                    navController.navigate("transfer")
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+
+                                composable("transfer") {
+                                    TransferScreen(
+                                        job = currentJob,
+                                        onPauseClick = { repository.pauseJob() },
+                                        onResumeClick = { repository.resumeJob() },
+                                        onDoneClick = {
                                             lifecycleScope.launch {
-                                                val job = repository.createAndStartJob(sourceAcc, destAcc, mode, isCompressed, orgMode, selectedItems)
-
-                                                // Enqueue WorkManager background worker
-                                                val workData = Data.Builder()
-                                                    .putString(TransferWorker.KEY_JOB_ID, job.id)
-                                                    .putString(TransferWorker.KEY_SOURCE_ACCOUNT_ID, sourceAcc.id)
-                                                    .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destAcc.id)
-                                                    .putString(TransferWorker.KEY_MODE, mode.name)
-                                                    .putBoolean("is_compressed", isCompressed)
-                                                    .putString("org_mode", orgMode.name)
-                                                    .build()
-
-                                                val workRequest = OneTimeWorkRequestBuilder<TransferWorker>()
-                                                    .setInputData(workData)
-                                                    .build()
-
-                                                WorkManager.getInstance(applicationContext).enqueueUniqueWork(
-                                                    "photo_transfer_work",
-                                                    androidx.work.ExistingWorkPolicy.REPLACE,
-                                                    workRequest
-                                                )
-
-                                                navController.navigate("transfer")
+                                                val currentAccs = oauthManager.getSavedAccounts()
+                                                selectedSourceId?.let { id ->
+                                                    currentAccs.find { it.id == id }?.let { oauthManager.refreshStorageQuota(it) }
+                                                }
+                                                selectedDestId?.let { id ->
+                                                    currentAccs.find { it.id == id }?.let { oauthManager.refreshStorageQuota(it) }
+                                                }
+                                                accounts = oauthManager.getSavedAccounts()
                                             }
+                                            navController.popBackStack("home", inclusive = false)
                                         }
-                                    }
-                                )
-                            }
-
-                            composable("transfer") {
-                                TransferScreen(
-                                    job = currentJob,
-                                    onPauseClick = { repository.pauseJob() },
-                                    onResumeClick = { repository.resumeJob() },
-                                    onDoneClick = {
-                                        // Refresh storage usage for the accounts involved in transfer
-                                        lifecycleScope.launch {
-                                            val currentAccs = oauthManager.getSavedAccounts()
-                                            selectedSourceId?.let { id ->
-                                                currentAccs.find { it.id == id }?.let { oauthManager.refreshStorageQuota(it) }
-                                            }
-                                            selectedDestId?.let { id ->
-                                                currentAccs.find { it.id == id }?.let { oauthManager.refreshStorageQuota(it) }
-                                            }
-                                            // Update local state to trigger UI refresh on Home Screen
-                                            accounts = oauthManager.getSavedAccounts()
-                                        }
-                                        navController.popBackStack("accounts", inclusive = false)
-                                    }
-                                )
-                            }
-
-                            composable("settings") {
-                                SettingsScreen(
-                                    currentClientId = oauthManager.getClientId(),
-                                    currentClientSecret = oauthManager.getClientSecret(),
-                                    onSaveCredentials = { clientId, clientSecret ->
-                                        oauthManager.saveClientCredentials(clientId, clientSecret)
-                                        Toast.makeText(this@MainActivity, "Credentials Saved!", Toast.LENGTH_SHORT).show()
-                                    },
-                                    onBackClick = { navController.popBackStack() }
-                                )
-                            }
-
-                            composable("history") {
-                                val history by produceState<List<TransferJob>>(initialValue = emptyList()) {
-                                    value = repository.getHistory()
+                                    )
                                 }
-                                val totalBytes by produceState<Long>(initialValue = 0L) {
-                                    value = repository.getTotalTransferredBytes()
+
+                                composable("settings") {
+                                    SettingsScreen(
+                                        currentClientId = oauthManager.getClientId(),
+                                        currentClientSecret = oauthManager.getClientSecret(),
+                                        onSaveCredentials = { clientId, clientSecret ->
+                                            oauthManager.saveClientCredentials(clientId, clientSecret)
+                                            Toast.makeText(this@MainActivity, "Credentials Saved!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onBackClick = { navController.popBackStack() }
+                                    )
                                 }
-                                
-                                HistoryScreen(
-                                    history = history,
-                                    totalBytes = totalBytes,
-                                    onBackClick = { navController.popBackStack() },
-                                    onClearHistory = {
-                                        lifecycleScope.launch {
-                                            repository.clearHistory()
-                                            navController.popBackStack()
-                                            Toast.makeText(this@MainActivity, "History Cleared", Toast.LENGTH_SHORT).show()
-                                        }
-                                    },
-                                    onFetchLogs = { jobId ->
-                                        repository.getJobLogs(jobId)
+
+                                composable("history") {
+                                    val history by produceState<List<TransferJob>>(initialValue = emptyList()) {
+                                        value = repository.getHistory()
                                     }
-                                )
+                                    val totalBytes by produceState<Long>(initialValue = 0L) {
+                                        value = repository.getTotalTransferredBytes()
+                                    }
+                                    
+                                    HistoryScreen(
+                                        history = history,
+                                        totalBytes = totalBytes,
+                                        onBackClick = { navController.popBackStack() },
+                                        onClearHistory = {
+                                            lifecycleScope.launch {
+                                                repository.clearHistory()
+                                                navController.popBackStack()
+                                                Toast.makeText(this@MainActivity, "History Cleared", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        onFetchLogs = { jobId ->
+                                            repository.getJobLogs(jobId)
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

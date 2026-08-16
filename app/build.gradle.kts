@@ -94,6 +94,14 @@ dependencies {
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation("com.google.mlkit:image-labeling:17.0.9")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("com.airbnb.android:lottie-compose:6.3.0")
+    
+    // Media3 for Video Playback
+    val media3Version = "1.5.1"
+    implementation("androidx.media3:media3-exoplayer:$media3Version")
+    implementation("androidx.media3:media3-ui:$media3Version")
+    implementation("androidx.media3:media3-common:$media3Version")
+    implementation("androidx.media3:media3-datasource-okhttp:$media3Version")
 
     // Background WorkManager & Security
     implementation("androidx.work:work-runtime-ktx:2.9.0")

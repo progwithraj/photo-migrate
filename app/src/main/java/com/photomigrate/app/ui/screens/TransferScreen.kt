@@ -36,7 +36,14 @@ fun TransferScreen(
 ) {
     val currentStatus = job?.status ?: JobStatus.IDLE
     val progress = job?.progress ?: 0f
-    val speedKb = (job?.speedBytesPerSec ?: 0L) / 1024L
+    
+    val speedBytes = job?.speedBytesPerSec ?: 0L
+    val speedText = when {
+        speedBytes >= 1024L * 1024L * 1024L -> String.format(java.util.Locale.US, "%.2f GB/s", speedBytes.toDouble() / (1024.0 * 1024.0 * 1024.0))
+        speedBytes >= 1024L * 1024L -> String.format(java.util.Locale.US, "%.2f MB/s", speedBytes.toDouble() / (1024.0 * 1024.0))
+        speedBytes >= 1024L -> String.format(java.util.Locale.US, "%.0f KB/s", speedBytes.toDouble() / 1024.0)
+        else -> "$speedBytes B/s"
+    }
     
     val remainingSec = (job?.remainingTimeMillis ?: 0L) / 1000L
     val remainingText = if (remainingSec > 60) "${remainingSec / 60} min" else "${remainingSec} sec"
@@ -168,7 +175,7 @@ fun TransferScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    StatItem(label = "Speed", value = "$speedKb KB/s")
+                    StatItem(label = "Speed", value = speedText)
                     StatItem(label = "Remaining", value = remainingText)
                     StatItem(label = "Failed", value = "${job?.failedItems ?: 0}")
                 }

@@ -122,7 +122,7 @@ class TransferRepository(private val context: Context) {
             
             Log.d("TransferRepository", "Finished loading media. Total items found: ${allItems.size}")
             
-            // Background Task: Index destination account to detect duplicates already present
+            // Background Task: Index destination account
             if (destinationAccount != null) {
                 CoroutineScope(Dispatchers.IO).launch {
                     indexDestinationAccount(destinationAccount)
@@ -137,6 +137,39 @@ class TransferRepository(private val context: Context) {
             emptyList()
         } finally {
             _isLoadingMedia.value = false
+        }
+    }
+
+    /**
+     * Specialized fetch for Explorer to get a mix of Photos and Drive items.
+     */
+    suspend fun loadMediaForExplorer(account: GoogleAccount, limit: Int = 300): List<MediaItem> = withContext(Dispatchers.IO) {
+        try {
+            Log.d("TransferRepository", "Explorer: Fetching media for ${account.email}")
+            val validAccount = oauthManager.refreshTokenIfNeededSuspend(account) ?: account
+            val allItems = mutableListOf<MediaItem>()
+            var nextToken: String? = null
+            var pageCount = 0
+            
+            do {
+                pageCount++
+                Log.d("TransferRepository", "Explorer: Fetching page $pageCount with token: $nextToken")
+                val (items, token) = apiService.listMediaItems(validAccount, pageSize = 100, pageToken = nextToken)
+                Log.d("TransferRepository", "Explorer: Received ${items.size} items. Next token: $token")
+                
+                allItems.addAll(items)
+                nextToken = token
+                if (allItems.size >= limit) break
+                
+                // Safety break to prevent infinite loops if something is wrong with tokens
+                if (pageCount > 10) break 
+            } while (nextToken != null)
+            
+            Log.d("TransferRepository", "Explorer: Finished. Total items found: ${allItems.size}")
+            allItems
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "Explorer fetch failed: ${e.message}")
+            emptyList()
         }
     }
 
