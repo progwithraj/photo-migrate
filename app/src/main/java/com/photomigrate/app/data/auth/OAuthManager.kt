@@ -23,15 +23,25 @@ class OAuthManager(private val context: Context) {
         .build()
 
     private val gson = Gson()
-    private val prefs = context.getSharedPreferences("photo_migrate_auth_prefs", Context.MODE_PRIVATE)
+    private val prefs =
+        context.getSharedPreferences("photo_migrate_auth_prefs", Context.MODE_PRIVATE)
 
     companion object {
-        const val REDIRECT_URI_SCHEME = "com.googleusercontent.apps.699958644859-gqrjba6g17kualdgr7h1c86stc50r90k"
+        const val REDIRECT_URI_SCHEME =
+            "com.googleusercontent.apps.699958644859-gqrjba6g17kualdgr7h1c86stc50r90k"
         const val REDIRECT_URI = "$REDIRECT_URI_SCHEME:/oauthredirect"
         const val AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
         const val TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
         const val USERINFO_ENDPOINT = "https://www.googleapis.com/oauth2/v2/userinfo"
-        const val ABOUT_ENDPOINT = "https://www.googleapis.com/drive/v3/about?fields=storageQuota,user"
+        const val ABOUT_ENDPOINT =
+            "https://www.googleapis.com/drive/v3/about?fields=storageQuota,user"
+
+        const val PREF_OPTIMIZATION = "transfer_optimization_pref"
+        const val OPT_ASK = "ASK"
+        const val OPT_YES = "YES"
+        const val OPT_NO = "NO"
+
+        const val PREF_AI_ORG_ENABLED = "ai_org_enabled"
 
         val SCOPES = listOf(
             "https://www.googleapis.com/auth/userinfo.email",
@@ -47,6 +57,7 @@ class OAuthManager(private val context: Context) {
         val id = prefs.getString("custom_client_id", "") ?: ""
         return id.ifEmpty { "699958644859-gqrjba6g17kualdgr7h1c86stc50r90k.apps.googleusercontent.com" }
     }
+
     fun getClientSecret(): String = prefs.getString("custom_client_secret", "") ?: ""
 
     fun saveClientCredentials(clientId: String, clientSecret: String) {
@@ -54,6 +65,18 @@ class OAuthManager(private val context: Context) {
             .putString("custom_client_id", clientId.trim())
             .putString("custom_client_secret", clientSecret.trim())
             .apply()
+    }
+
+    fun getOptimizationPreference(): String = prefs.getString(PREF_OPTIMIZATION, OPT_ASK) ?: OPT_ASK
+
+    fun setOptimizationPreference(pref: String) {
+        prefs.edit().putString(PREF_OPTIMIZATION, pref).apply()
+    }
+
+    fun isAiOrgEnabled(): Boolean = prefs.getBoolean(PREF_AI_ORG_ENABLED, false)
+
+    fun setAiOrgEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(PREF_AI_ORG_ENABLED, enabled).apply()
     }
 
     fun generateAuthUrl(): String {
@@ -79,12 +102,19 @@ class OAuthManager(private val context: Context) {
 
     fun getPendingVerifier(): String = prefs.getString("pending_verifier", "") ?: ""
 
-    fun exchangeCodeForToken(code: String, verifier: String, onResult: (GoogleAccount?, String?) -> Unit) {
+    fun exchangeCodeForToken(
+        code: String,
+        verifier: String,
+        onResult: (GoogleAccount?, String?) -> Unit
+    ) {
         val clientId = getClientId()
         val clientSecret = getClientSecret()
 
         if (clientId.isEmpty()) {
-            onResult(null, "Please configure your free Google Cloud Client ID in Setup Guide first.")
+            onResult(
+                null,
+                "Please configure your free Google Cloud Client ID in Setup Guide first."
+            )
             return
         }
 
@@ -120,7 +150,11 @@ class OAuthManager(private val context: Context) {
                 val expiresIn = (json["expires_in"] as? Double)?.toLong() ?: 3600L
 
                 // Fetch User Profile & Storage info
-                val account = fetchUserProfileAndQuota(accessToken, refreshToken, System.currentTimeMillis() + (expiresIn * 1000L))
+                val account = fetchUserProfileAndQuota(
+                    accessToken,
+                    refreshToken,
+                    System.currentTimeMillis() + (expiresIn * 1000L)
+                )
                 if (account != null) {
                     saveAccount(account)
                     onResult(account, null)
@@ -133,52 +167,53 @@ class OAuthManager(private val context: Context) {
         }.start()
     }
 
-    suspend fun refreshTokenIfNeededSuspend(account: GoogleAccount): GoogleAccount? = withContext(Dispatchers.IO) {
-        if (!account.isTokenExpired()) {
-            return@withContext account
-        }
+    suspend fun refreshTokenIfNeededSuspend(account: GoogleAccount): GoogleAccount? =
+        withContext(Dispatchers.IO) {
+            if (!account.isTokenExpired()) {
+                return@withContext account
+            }
 
-        val clientId = getClientId()
-        val clientSecret = getClientSecret()
-        if (account.refreshToken.isEmpty() || clientId.isEmpty()) {
-            return@withContext null
-        }
+            val clientId = getClientId()
+            val clientSecret = getClientSecret()
+            if (account.refreshToken.isEmpty() || clientId.isEmpty()) {
+                return@withContext null
+            }
 
-        val bodyBuilder = FormBody.Builder()
-            .add("client_id", clientId)
-            .add("grant_type", "refresh_token")
-            .add("refresh_token", account.refreshToken)
+            val bodyBuilder = FormBody.Builder()
+                .add("client_id", clientId)
+                .add("grant_type", "refresh_token")
+                .add("refresh_token", account.refreshToken)
 
-        if (clientSecret.isNotEmpty()) {
-            bodyBuilder.add("client_secret", clientSecret)
-        }
+            if (clientSecret.isNotEmpty()) {
+                bodyBuilder.add("client_secret", clientSecret)
+            }
 
-        val request = Request.Builder()
-            .url(TOKEN_ENDPOINT)
-            .post(bodyBuilder.build())
-            .build()
+            val request = Request.Builder()
+                .url(TOKEN_ENDPOINT)
+                .post(bodyBuilder.build())
+                .build()
 
-        try {
-            val response = client.newCall(request).execute()
-            val responseBody = response.body?.string() ?: ""
-            if (response.isSuccessful) {
-                val json = gson.fromJson(responseBody, Map::class.java)
-                val newAccessToken = json["access_token"] as? String ?: ""
-                val expiresIn = (json["expires_in"] as? Double)?.toLong() ?: 3600L
+            try {
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string() ?: ""
+                if (response.isSuccessful) {
+                    val json = gson.fromJson(responseBody, Map::class.java)
+                    val newAccessToken = json["access_token"] as? String ?: ""
+                    val expiresIn = (json["expires_in"] as? Double)?.toLong() ?: 3600L
 
-                val updatedAccount = account.copy(
-                    accessToken = newAccessToken,
-                    tokenExpirationTimeMillis = System.currentTimeMillis() + (expiresIn * 1000L)
-                )
-                saveAccount(updatedAccount)
-                updatedAccount
-            } else {
+                    val updatedAccount = account.copy(
+                        accessToken = newAccessToken,
+                        tokenExpirationTimeMillis = System.currentTimeMillis() + (expiresIn * 1000L)
+                    )
+                    saveAccount(updatedAccount)
+                    updatedAccount
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
                 null
             }
-        } catch (e: Exception) {
-            null
         }
-    }
 
     fun refreshTokenIfNeeded(account: GoogleAccount, onResult: (GoogleAccount?) -> Unit) {
         if (!account.isTokenExpired()) {
@@ -231,7 +266,11 @@ class OAuthManager(private val context: Context) {
         }.start()
     }
 
-    private fun fetchUserProfileAndQuota(accessToken: String, refreshToken: String, expirationMillis: Long): GoogleAccount? {
+    private fun fetchUserProfileAndQuota(
+        accessToken: String,
+        refreshToken: String,
+        expirationMillis: Long
+    ): GoogleAccount? {
         try {
             // Fetch User info
             val userRequest = Request.Builder()
@@ -306,43 +345,47 @@ class OAuthManager(private val context: Context) {
     }
 
     fun removeAccount(accountEmail: String) {
-        val current = getSavedAccounts().filterNot { it.email.equals(accountEmail, ignoreCase = true) }
+        val current =
+            getSavedAccounts().filterNot { it.email.equals(accountEmail, ignoreCase = true) }
         prefs.edit().putString("saved_accounts_json", gson.toJson(current)).apply()
     }
 
     /**
      * Re-fetches only the storage quota for a specific account.
      */
-    suspend fun refreshStorageQuota(account: GoogleAccount): GoogleAccount? = withContext(Dispatchers.IO) {
-        val validAccount = refreshTokenIfNeededSuspend(account) ?: return@withContext null
-        
-        try {
-            val driveRequest = Request.Builder()
-                .url(ABOUT_ENDPOINT)
-                .addHeader("Authorization", "Bearer ${validAccount.accessToken}")
-                .build()
-                
-            val driveResp = client.newCall(driveRequest).execute()
-            if (driveResp.isSuccessful) {
-                val driveJson = gson.fromJson(driveResp.body?.string(), Map::class.java)
-                val quota = driveJson["storageQuota"] as? Map<*, *>
-                if (quota != null) {
-                    val usedBytes = (quota["usage"] as? String)?.toLongOrNull() ?: validAccount.usedStorageBytes
-                    val totalBytes = (quota["limit"] as? String)?.toLongOrNull() ?: validAccount.totalStorageBytes
-                    
-                    val updatedAccount = validAccount.copy(
-                        usedStorageBytes = usedBytes,
-                        totalStorageBytes = totalBytes
-                    )
-                    saveAccount(updatedAccount)
-                    return@withContext updatedAccount
+    suspend fun refreshStorageQuota(account: GoogleAccount): GoogleAccount? =
+        withContext(Dispatchers.IO) {
+            val validAccount = refreshTokenIfNeededSuspend(account) ?: return@withContext null
+
+            try {
+                val driveRequest = Request.Builder()
+                    .url(ABOUT_ENDPOINT)
+                    .addHeader("Authorization", "Bearer ${validAccount.accessToken}")
+                    .build()
+
+                val driveResp = client.newCall(driveRequest).execute()
+                if (driveResp.isSuccessful) {
+                    val driveJson = gson.fromJson(driveResp.body?.string(), Map::class.java)
+                    val quota = driveJson["storageQuota"] as? Map<*, *>
+                    if (quota != null) {
+                        val usedBytes = (quota["usage"] as? String)?.toLongOrNull()
+                            ?: validAccount.usedStorageBytes
+                        val totalBytes = (quota["limit"] as? String)?.toLongOrNull()
+                            ?: validAccount.totalStorageBytes
+
+                        val updatedAccount = validAccount.copy(
+                            usedStorageBytes = usedBytes,
+                            totalStorageBytes = totalBytes
+                        )
+                        saveAccount(updatedAccount)
+                        return@withContext updatedAccount
+                    }
                 }
+            } catch (e: Exception) {
+                // Log or ignore
             }
-        } catch (e: Exception) {
-            // Log or ignore
+            null
         }
-        null
-    }
 
     // PKCE Helper Functions
     private fun generateCodeVerifier(): String {

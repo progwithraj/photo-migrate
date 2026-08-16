@@ -20,9 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.photomigrate.app.data.auth.OAuthManager
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.theme.ThemeManager
 
@@ -34,6 +36,9 @@ fun SettingsScreen(
     onSaveCredentials: (String, String) -> Unit,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val oauthManager = remember { OAuthManager(context) }
+    
     var clientId by remember { mutableStateOf(currentClientId) }
     var clientSecret by remember { mutableStateOf(currentClientSecret) }
     var savedSuccess by remember { mutableStateOf(false) }
@@ -87,7 +92,7 @@ fun SettingsScreen(
                     ThemeManager.themes.forEach { themeOption ->
                         val colors = ThemeManager.getThemeColors(themeOption)
                         val isSelected = ThemeManager.currentTheme == themeOption
-                        
+
                         Box(
                             modifier = Modifier
                                 .size(44.dp)
@@ -99,7 +104,9 @@ fun SettingsScreen(
                                 )
                                 .border(
                                     width = if (isSelected) 3.dp else 0.dp,
-                                    color = if (isSystemInDarkTheme()) Color.White else Color.Black.copy(alpha = 0.5f),
+                                    color = if (isSystemInDarkTheme()) Color.White else Color.Black.copy(
+                                        alpha = 0.5f
+                                    ),
                                     shape = CircleShape
                                 )
                                 .clickable { ThemeManager.setTheme(themeOption) },
@@ -118,7 +125,106 @@ fun SettingsScreen(
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            // Section: Optimization
+            Text(
+                text = "Transfer Optimization",
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Storage Saver Mode",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                val currentOptPref = remember { mutableStateOf(oauthManager.getOptimizationPreference()) }
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val options = listOf(
+                        OAuthManager.OPT_ASK to "Ask Everytime",
+                        OAuthManager.OPT_YES to "Yes, Optimize",
+                        OAuthManager.OPT_NO to "Original Only"
+                    )
+
+                    options.forEach { (pref, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    currentOptPref.value = pref
+                                    oauthManager.setOptimizationPreference(pref)
+                                }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = currentOptPref.value == pref,
+                                onClick = {
+                                    currentOptPref.value = pref
+                                    oauthManager.setOptimizationPreference(pref)
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = label, 
+                                fontSize = 15.sp, 
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "This setting controls whether you are prompted to compress images before each transfer.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            // Section: AI Features
+            Text(
+                text = "AI Features (Experimental)",
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                var aiEnabled by remember { mutableStateOf(oauthManager.isAiOrgEnabled()) }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Smart Organization", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(
+                            "Use on-device AI to automatically group photos into albums based on their content (e.g., Nature, Pets).",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = aiEnabled,
+                        onCheckedChange = {
+                            aiEnabled = it
+                            oauthManager.setAiOrgEnabled(it)
+                        }
+                    )
+                }
+            }
 
             // Section: Advanced
             Row(
@@ -148,7 +254,7 @@ fun SettingsScreen(
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     GlassCard(modifier = Modifier.fillMaxWidth()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -208,13 +314,60 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Connection Guide:", fontWeight = FontWeight.Bold)
-                    
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        )
+                    ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            Text("1. Enable Photos & Drive APIs in Google Cloud Console.", fontSize = 12.sp)
+                            Text(
+                                "1. Enable Photos & Drive APIs in Google Cloud Console.",
+                                fontSize = 12.sp
+                            )
                             Text("2. Create Android OAuth Client ID.", fontSize = 12.sp)
-                            Text("3. Add Redirect URI: com.photomigrate.app://oauthredirect", fontSize = 12.sp)
+                            Text(
+                                "3. Add Redirect URI: com.photomigrate.app://oauthredirect",
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "4. Important: When signing in, ensure you check the box for 'See, edit, create, and delete all your Google Drive files' to enable MOVE mode.",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    // Danger Zone
+                    Text(
+                        text = "Danger Zone",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    
+                    Button(
+                        onClick = {
+                            oauthManager.setAiOrgEnabled(false) // Reset prefs too
+                            // Using a simple thread for the reset to avoid complex scope issues in this one-off task
+                            Thread {
+                                com.photomigrate.app.data.db.TransferDatabase.getDatabase(context).clearAllTables()
+                            }.start()
+                            android.widget.Toast.makeText(context, "Database Cleared! Please restart the app.", android.widget.Toast.LENGTH_LONG).show()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.error),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.DeleteForever, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Reset App Database")
                     }
                 }
             }

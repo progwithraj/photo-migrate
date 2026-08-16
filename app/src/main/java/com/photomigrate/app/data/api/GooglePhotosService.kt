@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.source
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -20,9 +21,9 @@ import java.util.concurrent.TimeUnit
 class GooglePhotosService(private val context: Context) {
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
         .build()
 
     private val gson = Gson()
@@ -38,12 +39,17 @@ class GooglePhotosService(private val context: Context) {
     fun listMediaItems(account: GoogleAccount, pageSize: Int = 100, pageToken: String? = null): Pair<List<MediaItem>, String?> {
         Log.d("GooglePhotosService", "Listing media items for ${account.email}")
         
-        val actualToken = pageToken?.substringAfter("_")
-        val isDriveToken = pageToken?.startsWith("drive_") == true
+        val isDriveToken = pageToken?.startsWith("DRIVE|") == true
+        val actualToken = when {
+            pageToken == null -> null
+            isDriveToken -> pageToken.removePrefix("DRIVE|").let { if (it == "START") null else it }
+            pageToken.startsWith("PHOTOS|") -> pageToken.removePrefix("PHOTOS|")
+            else -> pageToken // Legacy support
+        }
         
         if (isDriveToken) {
             val (items, nextToken) = listDrivePhotos(account, pageSize, actualToken)
-            return Pair(items, nextToken?.let { "drive_$it" })
+            return Pair(items, nextToken?.let { "DRIVE|$it" })
         }
 
         val urlBuilder = StringBuilder("$PHOTOS_BASE_URL/mediaItems?pageSize=$pageSize")
@@ -69,10 +75,9 @@ class GooglePhotosService(private val context: Context) {
                     return Pair(emptyList(), null)
                 }
 
-                // If Photos API fails on first page, fallback to Drive
                 return if (pageToken == null) {
                     val (items, nextToken) = listDrivePhotos(account, pageSize, null)
-                    Pair(items, nextToken?.let { "drive_$it" })
+                    Pair(items, nextToken?.let { "DRIVE|$it" })
                 } else {
                     Pair(emptyList(), null)
                 }
@@ -104,9 +109,9 @@ class GooglePhotosService(private val context: Context) {
 
             // If Photos API reached the end, switch to Drive API to get everything
             val finalToken = if (photosNextToken != null) {
-                "photos_$photosNextToken"
+                "PHOTOS|$photosNextToken"
             } else {
-                "drive_start"
+                "DRIVE|START"
             }
 
             return Pair(mediaItems, finalToken)
@@ -122,7 +127,6 @@ class GooglePhotosService(private val context: Context) {
         if (ids.isEmpty()) return@withContext emptyList()
         
         Log.d("GooglePhotosService", "Fetching metadata for ${ids.size} items...")
-        // Photos API batchGet limit is 50 items per request
         val results = mutableListOf<MediaItem>()
         val chunks = ids.chunked(50)
         
@@ -149,34 +153,30 @@ class GooglePhotosService(private val context: Context) {
                         val filename = itemMap["filename"] as? String ?: "photo_$id.jpg"
                         val mimeType = itemMap["mimeType"] as? String ?: "image/jpeg"
                         val baseUrl = itemMap["baseUrl"] as? String ?: ""
-                        
+                        val mediaMetadata = itemMap["mediaMetadata"] as? Map<*, *>
+                        val creationTime = mediaMetadata?.get("creationTime") as? String ?: ""
+
                         results.add(MediaItem(
                             id = id,
                             filename = filename,
                             mimeType = mimeType,
                             sizeBytes = 0L,
                             baseUrl = baseUrl,
+                            creationTime = creationTime,
                             accountId = account.id
                         ))
                     }
-                } else {
-                    Log.w("GooglePhotosService", "batchGet failed: ${response.code}")
                 }
             } catch (e: Exception) {
                 Log.e("GooglePhotosService", "Error in batchGet: ${e.message}")
             }
         }
         
-        // If some items failed (maybe they are from Drive API), fallback to Drive API
         if (results.size < ids.size) {
             val foundIds = results.map { it.id }.toSet()
             val remainingIds = ids.filter { it !in foundIds }
-            Log.d("GooglePhotosService", "Falling back to Drive API for ${remainingIds.size} items in parallel")
-            
             val deferreds = remainingIds.map { id ->
-                async {
-                    fetchSingleDriveItem(account, id)
-                }
+                async { fetchSingleDriveItem(account, id) }
             }
             results.addAll(deferreds.awaitAll().filterNotNull())
         }
@@ -203,6 +203,7 @@ class GooglePhotosService(private val context: Context) {
                     sizeBytes = (file["size"] as? String)?.toLongOrNull() ?: 0L,
                     baseUrl = "$DRIVE_BASE_URL/files/${file["id"]}?alt=media",
                     thumbnailUrl = file["thumbnailLink"] as? String,
+                    creationTime = file["createdTime"] as? String ?: "",
                     accountId = account.id
                 )
             } else null
@@ -211,14 +212,7 @@ class GooglePhotosService(private val context: Context) {
         }
     }
 
-    /**
-     * Listing media items via Google Drive API
-     */
-    private fun listDrivePhotos(account: GoogleAccount, pageSize: Int, pageToken: String?): Pair<List<MediaItem>, String?> {
-        Log.d("GooglePhotosService", "Listing media items via Drive API. Token: $pageToken")
-        
-        val actualToken = if (pageToken == "start") null else pageToken
-        
+    private fun listDrivePhotos(account: GoogleAccount, pageSize: Int, actualToken: String?): Pair<List<MediaItem>, String?> {
         val query = "mimeType contains 'image/' or mimeType contains 'video/'"
         val urlBuilder = StringBuilder("$DRIVE_BASE_URL/files?q=${java.net.URLEncoder.encode(query, "UTF-8")}&pageSize=$pageSize&fields=nextPageToken,files(id,name,mimeType,size,createdTime,thumbnailLink)")
         
@@ -234,14 +228,10 @@ class GooglePhotosService(private val context: Context) {
 
         try {
             val response = client.newCall(request).execute()
-            if (!response.isSuccessful) {
-                Log.e("GooglePhotosService", "Drive API failed (${response.code})")
-                return Pair(emptyList(), null)
-            }
+            if (!response.isSuccessful) return Pair(emptyList(), null)
 
             val json = gson.fromJson(response.body?.string(), Map::class.java)
             val rawFiles = json["files"] as? List<Map<*, *>> ?: emptyList()
-            Log.d("GooglePhotosService", "Found ${rawFiles.size} items in Drive API")
             val nextPageToken = json["nextPageToken"] as? String
 
             val items = rawFiles.mapNotNull { file ->
@@ -270,27 +260,18 @@ class GooglePhotosService(private val context: Context) {
         }
     }
 
-    /**
-     * Downloads a media item to temporary local file cache and computes its SHA-256 hash.
-     */
     fun downloadToTempFile(account: GoogleAccount, item: MediaItem, onProgress: (Long, Long) -> Unit): Pair<File, String>? {
         val tempDir = File(context.cacheDir, "transfer_cache")
         if (!tempDir.exists()) tempDir.mkdirs()
 
         val tempFile = File(tempDir, "temp_${System.currentTimeMillis()}_${item.filename}")
-        
-        // If it's a Photos API item, append =d for full download. 
-        // If it's a Drive API item, baseUrl already has alt=media.
         val downloadUrl = if (item.baseUrl.contains("googleusercontent.com") && !item.baseUrl.contains("drive.google.com")) {
             "${item.baseUrl}=d" 
         } else {
             item.baseUrl
         }
 
-        Log.d("GooglePhotosService", "Downloading from: $downloadUrl")
         val requestBuilder = Request.Builder().url(downloadUrl)
-        
-        // Add auth header for all non-Photos-baseUrl requests (Photos uses token-in-URL usually, but Drive needs header)
         if (!downloadUrl.contains("googleusercontent.com") || downloadUrl.contains("googleapis.com")) {
             requestBuilder.addHeader("Authorization", "Bearer ${account.accessToken}")
         }
@@ -331,20 +312,33 @@ class GooglePhotosService(private val context: Context) {
         }
     }
 
-    /**
-     * Uploads media file to destination account's Google Photos library.
-     */
     fun uploadMediaToDestination(
         destinationAccount: GoogleAccount,
         file: File,
         filename: String,
         mimeType: String,
+        albumId: String? = null,
         onProgress: (Long, Long) -> Unit
     ): String? {
-        // Step 1: Upload raw bytes to uploads endpoint
         val uploadUrl = "$PHOTOS_BASE_URL/uploads"
         val mediaType = mimeType.toMediaType()
-        val requestBody = file.asRequestBody(mediaType)
+        
+        val requestBody = object : okhttp3.RequestBody() {
+            override fun contentType() = mediaType
+            override fun contentLength() = file.length()
+            override fun writeTo(sink: okio.BufferedSink) {
+                file.inputStream().source().use { source ->
+                    var totalRead = 0L
+                    val buffer = okio.Buffer()
+                    var read: Long
+                    while (source.read(buffer, 8192L).also { read = it } != -1L) {
+                        sink.write(buffer, read)
+                        totalRead += read
+                        onProgress(totalRead, file.length())
+                    }
+                }
+            }
+        }
 
         val uploadRequest = Request.Builder()
             .url(uploadUrl)
@@ -357,28 +351,22 @@ class GooglePhotosService(private val context: Context) {
 
         try {
             val uploadResp = client.newCall(uploadRequest).execute()
-            val uploadToken = uploadResp.body?.string()?.trim() ?: ""
+            val responseBody = uploadResp.body?.string() ?: ""
+            val uploadToken = responseBody.trim()
 
             if (!uploadResp.isSuccessful || uploadToken.isEmpty()) {
-                // Fallback upload via Drive API if photos upload fails
                 return uploadToDrive(destinationAccount, file, filename, mimeType)
             }
 
-            // Step 2: Call batchCreate to attach uploaded bytes to Google Photos library
             val batchUrl = "$PHOTOS_BASE_URL/mediaItems:batchCreate"
-            val jsonPayload = mapOf(
-                "newMediaItems" to listOf(
-                    mapOf(
-                        "description" to "Migrated via PhotoMigrate App",
-                        "simpleMediaItem" to mapOf(
-                            "fileName" to filename,
-                            "uploadToken" to uploadToken
-                        )
-                    )
-                )
+            val newMediaItem = mapOf(
+                "description" to "Migrated via PhotoMigrate App",
+                "simpleMediaItem" to mapOf("fileName" to filename, "uploadToken" to uploadToken)
             )
+            val payload = mutableMapOf<String, Any>("newMediaItems" to listOf(newMediaItem))
+            if (!albumId.isNullOrEmpty()) payload["albumId"] = albumId
 
-            val batchRequestBody = gson.toJson(jsonPayload).toRequestBody("application/json".toMediaType())
+            val batchRequestBody = gson.toJson(payload).toRequestBody("application/json".toMediaType())
             val batchRequest = Request.Builder()
                 .url(batchUrl)
                 .addHeader("Authorization", "Bearer ${destinationAccount.accessToken}")
@@ -386,28 +374,21 @@ class GooglePhotosService(private val context: Context) {
                 .build()
 
             val batchResp = client.newCall(batchRequest).execute()
-            if (batchResp.isSuccessful) {
-                return uploadToken
-            }
+            if (batchResp.isSuccessful) return uploadToken
             return uploadToDrive(destinationAccount, file, filename, mimeType)
         } catch (e: Exception) {
             return uploadToDrive(destinationAccount, file, filename, mimeType)
         }
     }
 
-    /**
-     * Fallback Upload via Google Drive API to "PhotoMigrate" Folder
-     */
     private fun uploadToDrive(destinationAccount: GoogleAccount, file: File, filename: String, mimeType: String): String? {
         val uploadUrl = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart"
-
         val requestBody = file.asRequestBody(mimeType.toMediaType())
         val request = Request.Builder()
             .url(uploadUrl)
             .addHeader("Authorization", "Bearer ${destinationAccount.accessToken}")
             .post(requestBody)
             .build()
-
         return try {
             val resp = client.newCall(request).execute()
             if (resp.isSuccessful) "drive_upload_success" else null
@@ -416,25 +397,47 @@ class GooglePhotosService(private val context: Context) {
         }
     }
 
-    /**
-     * Deletes / Trashes item from source account (used in Move Mode to free storage).
-     */
-    fun deleteFromSourceAccount(account: GoogleAccount, itemId: String, filename: String? = null): Boolean {
-        Log.d("GooglePhotosService", "Attempting to trash item: $itemId ($filename)")
-        
-        // Try direct delete with the provided ID first
-        if (tryTrash(account, itemId)) return true
-        
-        // If direct delete fails and we have a filename, try to find it in Drive by name
-        if (!filename.isNullOrEmpty()) {
-            Log.d("GooglePhotosService", "Direct trash failed, searching Drive for: $filename")
-            val resolvedId = findFileIdByName(account, filename)
-            if (resolvedId != null && resolvedId != itemId) {
-                Log.d("GooglePhotosService", "Resolved new Drive ID for trashing: $resolvedId")
-                return tryTrash(account, resolvedId)
-            }
+    fun createAlbum(account: GoogleAccount, title: String): String? {
+        val url = "$PHOTOS_BASE_URL/albums"
+        val payload = mapOf("album" to mapOf("title" to title))
+        val body = gson.toJson(payload).toRequestBody("application/json".toMediaType())
+        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer ${account.accessToken}").post(body).build()
+        return try {
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val json = gson.fromJson(response.body?.string(), Map::class.java)
+                json["id"] as? String
+            } else null
+        } catch (e: Exception) {
+            null
         }
-        
+    }
+
+    fun listAlbums(account: GoogleAccount): List<Pair<String, String>> {
+        val url = "$PHOTOS_BASE_URL/albums?pageSize=50"
+        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer ${account.accessToken}").get().build()
+        return try {
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val json = gson.fromJson(response.body?.string(), Map::class.java)
+                val rawAlbums = json["albums"] as? List<Map<*, *>> ?: emptyList()
+                rawAlbums.mapNotNull { 
+                    val id = it["id"] as? String
+                    val title = it["title"] as? String
+                    if (id != null && title != null) id to title else null
+                }
+            } else emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun deleteFromSourceAccount(account: GoogleAccount, itemId: String, filename: String? = null): Boolean {
+        if (tryTrash(account, itemId)) return true
+        if (!filename.isNullOrEmpty()) {
+            val resolvedId = findFileIdByName(account, filename)
+            if (resolvedId != null && resolvedId != itemId) return tryTrash(account, resolvedId)
+        }
         return false
     }
 
@@ -445,14 +448,9 @@ class GooglePhotosService(private val context: Context) {
             .addHeader("Authorization", "Bearer ${account.accessToken}")
             .patch(gson.toJson(mapOf("trashed" to true)).toRequestBody("application/json".toMediaType()))
             .build()
-
         return try {
             val response = client.newCall(request).execute()
-            val success = response.isSuccessful
-            if (!success) {
-                Log.w("GooglePhotosService", "Trash failed for $id: ${response.code}")
-            }
-            success
+            response.isSuccessful
         } catch (e: Exception) {
             false
         }
@@ -461,13 +459,7 @@ class GooglePhotosService(private val context: Context) {
     private fun findFileIdByName(account: GoogleAccount, filename: String): String? {
         val query = "name = '${filename.replace("'", "\\'")}' and trashed = false"
         val url = "$DRIVE_BASE_URL/files?q=${java.net.URLEncoder.encode(query, "UTF-8")}&pageSize=1&fields=files(id)"
-        
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer ${account.accessToken}")
-            .get()
-            .build()
-            
+        val request = Request.Builder().url(url).addHeader("Authorization", "Bearer ${account.accessToken}").get().build()
         return try {
             val response = client.newCall(request).execute()
             if (response.isSuccessful) {

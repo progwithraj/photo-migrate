@@ -17,6 +17,41 @@ data class QueuedItem(
     val mediaId: String
 )
 
+@Entity(tableName = "remote_metadata", primaryKeys = ["accountId", "filename", "sizeBytes", "creationTime"])
+data class RemoteMetadata(
+    val accountId: String,
+    val filename: String,
+    val sizeBytes: Long,
+    val creationTime: String
+)
+
+@Entity(tableName = "transfer_jobs")
+data class TransferJobEntity(
+    @PrimaryKey val id: String,
+    val sourceAccountId: String,
+    val destinationAccountId: String,
+    val mode: String,
+    val orgMode: String,
+    val batchAlbumName: String?,
+    val totalItems: Int,
+    val completedItems: Int,
+    val failedItems: Int,
+    val totalBytes: Long,
+    val transferredBytes: Long,
+    val status: String,
+    val startTime: Long,
+    val endTime: Long?
+)
+
+@Entity(tableName = "job_logs")
+data class JobLogEntity(
+    @PrimaryKey(autoGenerate = true) val logId: Int = 0,
+    val jobId: String,
+    val timestamp: Long,
+    val message: String,
+    val isError: Boolean
+)
+
 @Dao
 interface TransferDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -39,9 +74,43 @@ interface TransferDao {
 
     @Query("DELETE FROM transfer_queue WHERE jobId = :jobId")
     suspend fun clearQueue(jobId: String)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertRemoteMetadata(items: List<RemoteMetadata>)
+
+    @Query("SELECT * FROM remote_metadata WHERE accountId = :accountId AND filename = :filename AND sizeBytes = :size AND creationTime = :time LIMIT 1")
+    suspend fun findRemoteMatch(accountId: String, filename: String, size: Long, time: String): RemoteMetadata?
+
+    @Query("DELETE FROM remote_metadata WHERE accountId = :accountId")
+    suspend fun clearRemoteMetadata(accountId: String)
+
+    // History & Analytics
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertJob(job: TransferJobEntity)
+
+    @Update
+    suspend fun updateJob(job: TransferJobEntity)
+
+    @Insert
+    suspend fun insertLog(log: JobLogEntity)
+
+    @Query("SELECT * FROM transfer_jobs ORDER BY startTime DESC")
+    suspend fun getAllJobs(): List<TransferJobEntity>
+
+    @Query("SELECT * FROM job_logs WHERE jobId = :jobId ORDER BY timestamp ASC")
+    suspend fun getLogsForJob(jobId: String): List<JobLogEntity>
+
+    @Query("SELECT SUM(transferredBytes) FROM transfer_jobs WHERE status = 'COMPLETED'")
+    suspend fun getTotalTransferredBytes(): Long?
+
+    @Query("SELECT COUNT(*) FROM transfer_jobs")
+    suspend fun getJobCount(): Int
+
+    @Query("DELETE FROM transfer_jobs")
+    suspend fun clearHistory()
 }
 
-@Database(entities = [TransferredFile::class, QueuedItem::class], version = 2, exportSchema = false)
+@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class, TransferJobEntity::class, JobLogEntity::class], version = 7, exportSchema = false)
 abstract class TransferDatabase : RoomDatabase() {
     abstract fun transferDao(): TransferDao
 

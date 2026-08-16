@@ -7,6 +7,12 @@ enum class TransferMode {
     MOVE  // Copy to destination, then delete from source account to free storage
 }
 
+enum class OrganizationMode {
+    NONE,
+    BY_DATE,   // e.g. "August 2026"
+    BY_CONTENT // Using AI Content Analysis
+}
+
 enum class JobStatus {
     IDLE,
     PREPARING,
@@ -28,6 +34,9 @@ data class TransferJob(
     val sourceAccountId: String,
     val destinationAccountId: String,
     val mode: TransferMode = TransferMode.COPY,
+    val orgMode: OrganizationMode = OrganizationMode.NONE,
+    val batchAlbumName: String? = null, // Consensus album name for AI grouping
+    val isCompressionEnabled: Boolean = false,
     val selectedMediaIds: List<String> = emptyList(),
     val totalItems: Int = 0,
     val completedItems: Int = 0,
@@ -35,11 +44,21 @@ data class TransferJob(
     val totalBytes: Long = 0L,
     val transferredBytes: Long = 0L,
     val speedBytesPerSec: Long = 0L,
+    val speedHistory: List<Long> = emptyList(), // History for trend line
+    val startTime: Long = System.currentTimeMillis(),
+    val endTime: Long? = null,
     val status: JobStatus = JobStatus.IDLE,
     val logs: List<TransferLog> = emptyList()
 ) {
     val progress: Float
-        get() = if (totalItems > 0) completedItems.toFloat() / totalItems.toFloat() else 0f
+        get() = if (totalItems > 0) (completedItems.toFloat() / totalItems.toFloat()).coerceIn(0f, 1f) else 0f
+
+    val remainingTimeMillis: Long
+        get() {
+            if (speedBytesPerSec <= 0) return 0L
+            val remainingBytes = totalBytes - transferredBytes
+            return (remainingBytes * 1000L) / speedBytesPerSec
+        }
 
     val bytesProgress: Float
         get() = if (totalBytes > 0) (transferredBytes.toFloat() / totalBytes.toFloat()).coerceIn(0f, 1f) else 0f

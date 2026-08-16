@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TransferRepository(private val context: Context) {
 
@@ -34,6 +36,8 @@ class TransferRepository(private val context: Context) {
     private val db = TransferDatabase.getDatabase(context)
     private val gson = Gson()
 
+    private val albumCache = mutableMapOf<String, String>() // Title to ID map
+
     private val _currentJob = MutableStateFlow<TransferJob?>(null)
     val currentJob: StateFlow<TransferJob?> = _currentJob.asStateFlow()
 
@@ -49,11 +53,20 @@ class TransferRepository(private val context: Context) {
      * Checks if a photo with sha256 hash has already been transferred to destination account.
      */
     suspend fun isDuplicateHash(destinationAccountId: String, sha256Hash: String): Boolean {
-        return db.transferDao().findByHash(destinationAccountId, sha256Hash) != null
+        return try {
+            db.transferDao().findByHash(destinationAccountId, sha256Hash) != null
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in isDuplicateHash: ${e.message}")
+            false
+        }
     }
 
     private suspend fun markTransferred(mediaId: String, destinationAccountId: String, sha256Hash: String) {
-        db.transferDao().insert(TransferredFile(mediaId, destinationAccountId, sha256Hash))
+        try {
+            db.transferDao().insert(TransferredFile(mediaId, destinationAccountId, sha256Hash))
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in markTransferred: ${e.message}")
+        }
     }
 
     /**
@@ -70,7 +83,12 @@ class TransferRepository(private val context: Context) {
         try {
             val validAccount = oauthManager.refreshTokenIfNeededSuspend(sourceAccount) ?: sourceAccount
             val transferredIds = if (destinationAccount != null) {
-                db.transferDao().getTransferredMediaIds(destinationAccount.id).toSet()
+                try {
+                    db.transferDao().getTransferredMediaIds(destinationAccount.id).toSet()
+                } catch (e: Exception) {
+                    Log.e("TransferRepository", "DB Error fetching transferred IDs: ${e.message}")
+                    emptySet()
+                }
             } else emptySet()
 
             val allItems = mutableListOf<MediaItem>()
@@ -87,8 +105,12 @@ class TransferRepository(private val context: Context) {
                 }
 
                 // Filter out items that are already transferred
+                val itemsBeforeFilter = items.size
                 val filteredItems = items.filter { it.id !in transferredIds }
                 allItems.addAll(filteredItems)
+                
+                Log.d("TransferRepository", "Loaded ${items.size} items, kept ${filteredItems.size} (Filtered ${itemsBeforeFilter - filteredItems.size} already moved).")
+                
                 nextToken = token
                 
                 // Update UI incrementally
@@ -99,6 +121,14 @@ class TransferRepository(private val context: Context) {
             } while (nextToken != null)
             
             Log.d("TransferRepository", "Finished loading media. Total items found: ${allItems.size}")
+            
+            // Background Task: Index destination account to detect duplicates already present
+            if (destinationAccount != null) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    indexDestinationAccount(destinationAccount)
+                }
+            }
+            
             allItems
         } catch (e: Exception) {
             if (e !is CancellationException) {
@@ -117,41 +147,179 @@ class TransferRepository(private val context: Context) {
         sourceAccount: GoogleAccount,
         destinationAccount: GoogleAccount,
         mode: TransferMode,
+        isCompressed: Boolean,
+        orgMode: OrganizationMode,
         selectedItems: List<MediaItem>
     ): TransferJob = withContext(Dispatchers.IO) {
         val job = TransferJob(
             sourceAccountId = sourceAccount.id,
             destinationAccountId = destinationAccount.id,
             mode = mode,
+            orgMode = orgMode,
+            batchAlbumName = null,
+            isCompressionEnabled = isCompressed,
             selectedMediaIds = selectedItems.map { it.id },
             totalItems = selectedItems.size,
             totalBytes = selectedItems.sumOf { it.sizeBytes },
             status = JobStatus.RUNNING,
-            logs = listOf(TransferLog(message = "Job initialized: ${selectedItems.size} items queued for ${mode.name} mode."))
+            logs = listOf(TransferLog(message = "Job initialized: ${selectedItems.size} items queued for ${mode.name} mode (Storage Saver: $isCompressed, AI: ${orgMode != OrganizationMode.NONE})."))
         )
         
-        // Persist queue to database to bypass WorkManager data limits
-        val queuedItems = selectedItems.map { QueuedItem(job.id, it.id) }
-        db.transferDao().insertQueuedItems(queuedItems)
+        // Clear album cache for new job
+        albumCache.clear()
+        
+        try {
+            // Persist queue to database to bypass WorkManager data limits
+            val queuedItems = selectedItems.map { QueuedItem(job.id, it.id) }
+            db.transferDao().insertQueuedItems(queuedItems)
+            
+            // Persist job to history
+            db.transferDao().insertJob(job.toEntity())
+            job.logs.forEach { db.transferDao().insertLog(it.toEntity(job.id)) }
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in createAndStartJob: ${e.message}")
+        }
         
         _currentJob.value = job
         job
     }
 
+    suspend fun getHistory(): List<TransferJob> = withContext(Dispatchers.IO) {
+        try {
+            db.transferDao().getAllJobs().map { it.toModel() }
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in getHistory: ${e.message}")
+            emptyList()
+        }
+    }
+
+    suspend fun getJobLogs(jobId: String): List<TransferLog> = withContext(Dispatchers.IO) {
+        try {
+            db.transferDao().getLogsForJob(jobId).map { it.toModel() }
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in getJobLogs: ${e.message}")
+            emptyList()
+        }
+    }
+
     suspend fun getQueuedMediaIds(jobId: String): List<String> = withContext(Dispatchers.IO) {
-        db.transferDao().getQueuedMediaIds(jobId)
+        try {
+            db.transferDao().getQueuedMediaIds(jobId)
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in getQueuedMediaIds: ${e.message}")
+            emptyList()
+        }
+    }
+
+    suspend fun clearHistory() = withContext(Dispatchers.IO) {
+        try {
+            db.transferDao().clearHistory()
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in clearHistory: ${e.message}")
+        }
+    }
+    
+    suspend fun getTotalTransferredBytes(): Long = withContext(Dispatchers.IO) {
+        try {
+            db.transferDao().getTotalTransferredBytes() ?: 0L
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in getTotalTransferredBytes: ${e.message}")
+            0L
+        }
+    }
+
+    private suspend fun updateJobSync(jobId: String? = null, reducer: (TransferJob) -> TransferJob) {
+        val current = _currentJob.value ?: return
+        if (jobId != null && current.id != jobId) return 
+        val updated = reducer(current)
+        _currentJob.value = updated
+        
+        // Persist update to DB immediately
+        try {
+            db.transferDao().updateJob(updated.toEntity())
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in updateJobSync: ${e.message}")
+        }
     }
 
     private fun updateJob(jobId: String? = null, reducer: (TransferJob) -> TransferJob) {
         val current = _currentJob.value ?: return
-        // If a jobId is provided, only update if it matches the current active job.
         if (jobId != null && current.id != jobId) return 
-        _currentJob.value = reducer(current)
+        val updated = reducer(current)
+        _currentJob.value = updated
+        
+        // Persist update to DB (async)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                db.transferDao().updateJob(updated.toEntity())
+            } catch (e: Exception) {
+                Log.e("TransferRepository", "DB Error in updateJob async: ${e.message}")
+            }
+        }
     }
 
     private fun addLog(jobId: String? = null, message: String, isError: Boolean = false) {
-        updateJob(jobId) { it.copy(logs = it.logs + TransferLog(message = message, isError = isError)) }
+        val log = TransferLog(message = message, isError = isError)
+        updateJob(jobId) { it.copy(logs = it.logs + log) }
+        
+        // Persist log to DB
+        jobId?.let { id ->
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    db.transferDao().insertLog(log.toEntity(id))
+                } catch (e: Exception) {
+                    Log.e("TransferRepository", "DB Error in addLog async: ${e.message}")
+                }
+            }
+        }
     }
+
+    private fun TransferJob.toEntity() = com.photomigrate.app.data.db.TransferJobEntity(
+        id = id,
+        sourceAccountId = sourceAccountId,
+        destinationAccountId = destinationAccountId,
+        mode = mode.name,
+        orgMode = orgMode.name,
+        batchAlbumName = batchAlbumName,
+        totalItems = totalItems,
+        completedItems = completedItems,
+        failedItems = failedItems,
+        totalBytes = totalBytes,
+        transferredBytes = transferredBytes,
+        status = status.name,
+        startTime = startTime,
+        endTime = endTime
+    )
+
+    private fun com.photomigrate.app.data.db.TransferJobEntity.toModel() = TransferJob(
+        id = id,
+        sourceAccountId = sourceAccountId,
+        destinationAccountId = destinationAccountId,
+        mode = TransferMode.valueOf(mode),
+        orgMode = OrganizationMode.valueOf(orgMode),
+        batchAlbumName = batchAlbumName,
+        totalItems = totalItems,
+        completedItems = completedItems,
+        failedItems = failedItems,
+        totalBytes = totalBytes,
+        transferredBytes = transferredBytes,
+        status = JobStatus.valueOf(status),
+        startTime = startTime,
+        endTime = endTime
+    )
+
+    private fun TransferLog.toEntity(jobId: String) = com.photomigrate.app.data.db.JobLogEntity(
+        jobId = jobId,
+        timestamp = timestamp,
+        message = message,
+        isError = isError
+    )
+
+    private fun com.photomigrate.app.data.db.JobLogEntity.toModel() = TransferLog(
+        timestamp = timestamp,
+        message = message,
+        isError = isError
+    )
 
     /**
      * Executes the transfer loop item by item.
@@ -162,6 +330,8 @@ class TransferRepository(private val context: Context) {
         item: MediaItem,
         mode: TransferMode,
         jobId: String,
+        isCompressed: Boolean = false,
+        orgMode: OrganizationMode = OrganizationMode.NONE,
         onProgressUpdate: (TransferJob) -> Unit
     ) = withContext(Dispatchers.IO) {
         // Step 1: Ensure OAuth Tokens are valid
@@ -169,12 +339,44 @@ class TransferRepository(private val context: Context) {
         val validDest = oauthManager.refreshTokenIfNeededSuspend(destinationAccount) ?: destinationAccount
 
         val startTime = System.currentTimeMillis()
+        
+        // Smart Duplicate Detection Step 0: Check metadata before downloading
+        if (isSmartDuplicate(destinationAccount.id, item)) {
+            addLog(jobId, "SMART SKIP: '${item.filename}' already exists in destination (Matched via Metadata).")
+            item.status = SyncStatus.COMPLETED
+            updateJobSync(jobId) { 
+                it.copy(
+                    completedItems = it.completedItems + 1,
+                    transferredBytes = it.transferredBytes + item.sizeBytes
+                ) 
+            }
+            _currentJob.value?.let { onProgressUpdate(it) }
+            return@withContext
+        }
+
         addLog(jobId, "Downloading '${item.filename}'...")
         _currentJob.value?.let { onProgressUpdate(it) }
 
+        var lastUpdate = 0L
         // Step 2: Download file to temp cache & compute SHA-256 hash
         val downloadResult = apiService.downloadToTempFile(validSource, item) { readBytes, totalBytes ->
-            // Progress callback during download
+            val now = System.currentTimeMillis()
+            // Throttle UI updates to every 300ms to prevent UI freezing
+            if (now - lastUpdate > 300) {
+                val elapsed = (now - startTime) / 1000L
+                if (elapsed > 0) {
+                    val currentSpeed = (readBytes / elapsed)
+                    updateJob(jobId) { 
+                        val newHistory = (it.speedHistory + currentSpeed).takeLast(200)
+                        it.copy(
+                            speedBytesPerSec = currentSpeed,
+                            speedHistory = newHistory
+                        )
+                    }
+                    _currentJob.value?.let { onProgressUpdate(it) }
+                }
+                lastUpdate = now
+            }
         }
 
         if (downloadResult == null) {
@@ -186,10 +388,19 @@ class TransferRepository(private val context: Context) {
             return@withContext
         }
 
-        val (tempFile, hash) = downloadResult
-        val actualFileSize = tempFile.length()
+        val (origFile, hash) = downloadResult
+        
+        // Storage Saver Optimization: Compress image before upload
+        val fileToUpload = if (isCompressed && item.mimeType.startsWith("image/")) {
+            addLog(jobId, "Optimizing '${item.filename}' (Storage Saver)...")
+            com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.mimeType) ?: origFile
+        } else {
+            origFile
+        }
 
-        // Step 3: Check Deduplication
+        val actualFileSize = fileToUpload.length()
+
+        // Step 3: Check Deduplication (Always use original file hash for duplicate detection)
         if (isDuplicateHash(validDest.id, hash)) {
             item.status = SyncStatus.COMPLETED
             markTransferred(item.id, validDest.id, hash)
@@ -200,7 +411,8 @@ class TransferRepository(private val context: Context) {
                 ) 
             }
             addLog(jobId, "SKIPPED: '${item.filename}' (Already exists in destination).")
-            tempFile.delete()
+            origFile.delete()
+            if (fileToUpload != origFile) fileToUpload.delete()
             _currentJob.value?.let { onProgressUpdate(it) }
             return@withContext
         }
@@ -210,16 +422,69 @@ class TransferRepository(private val context: Context) {
         addLog(jobId, "Uploading '${item.filename}' ($sizeMb MB)...")
         _currentJob.value?.let { onProgressUpdate(it) }
 
-        val uploadResult = apiService.uploadMediaToDestination(
-            destinationAccount = validDest,
-            file = tempFile,
-            filename = item.filename,
-            mimeType = item.mimeType
-        ) { uploadedBytes, totalBytes ->
-            // Progress callback during upload
+        lastUpdate = 0L
+        
+        // Smart AI Organization Step: Determine target album
+        var targetAlbumId: String? = null
+        if (orgMode != OrganizationMode.NONE && item.mimeType.startsWith("image/")) {
+            val albumName = when (orgMode) {
+                OrganizationMode.BY_DATE -> {
+                    // Extract Month Year from creationTime (e.g. 2026-08-16T... -> August 2026)
+                    val rawTime = item.creationTime
+                    if (rawTime.length >= 7) {
+                        try {
+                            val date = SimpleDateFormat("yyyy-MM", Locale.US).parse(rawTime.take(7))
+                            date?.let { SimpleDateFormat("MMMM yyyy", Locale.US).format(it) } ?: "Migrated Photos"
+                        } catch (e: Exception) {
+                            "Unknown Date"
+                        }
+                    } else {
+                        "Unknown Date"
+                    }
+                }
+                OrganizationMode.BY_CONTENT -> {
+                    // Use the consensus batch name decided during pre-analysis
+                    _currentJob.value?.batchAlbumName ?: "Other"
+                }
+                else -> null
+            }
+            
+            if (albumName != null) {
+                targetAlbumId = getOrCreateAlbumId(validDest, albumName)
+                if (targetAlbumId != null) {
+                    addLog(jobId, "Sorting into album: '$albumName'")
+                }
+            }
         }
 
-        tempFile.delete() // Clean up cache file
+        val uploadResult = apiService.uploadMediaToDestination(
+            destinationAccount = validDest,
+            file = fileToUpload,
+            filename = item.filename,
+            mimeType = item.mimeType,
+            albumId = targetAlbumId
+        ) { uploadedBytes, totalBytes ->
+            val now = System.currentTimeMillis()
+            // Throttle UI updates to every 300ms
+            if (now - lastUpdate > 300) {
+                val elapsed = (now - startTime) / 1000L
+                if (elapsed > 0) {
+                    val currentSpeed = (uploadedBytes / elapsed)
+                    updateJob(jobId) { 
+                        val newHistory = (it.speedHistory + currentSpeed).takeLast(200)
+                        it.copy(
+                            speedBytesPerSec = currentSpeed,
+                            speedHistory = newHistory
+                        )
+                    }
+                    _currentJob.value?.let { onProgressUpdate(it) }
+                }
+                lastUpdate = now
+            }
+        }
+
+        origFile.delete() // Clean up original cache file
+        if (fileToUpload != origFile) fileToUpload.delete() // Clean up compressed file
 
         if (uploadResult != null) {
             markTransferred(item.id, validDest.id, hash)
@@ -228,11 +493,13 @@ class TransferRepository(private val context: Context) {
             val elapsedSec = ((System.currentTimeMillis() - startTime) / 1000L).coerceAtLeast(1L)
             val speed = actualFileSize / elapsedSec
 
-            updateJob(jobId) { 
+            updateJobSync(jobId) { 
+                val newHistory = (it.speedHistory + speed).takeLast(50)
                 it.copy(
                     completedItems = it.completedItems + 1,
                     transferredBytes = it.transferredBytes + actualFileSize,
-                    speedBytesPerSec = speed
+                    speedBytesPerSec = speed,
+                    speedHistory = newHistory
                 )
             }
 
@@ -246,7 +513,7 @@ class TransferRepository(private val context: Context) {
                     item.status = SyncStatus.TRASHED_FROM_SOURCE
                     addLog(jobId, "FREED STORAGE: '${item.filename}' moved to Trash in source account.")
                 } else {
-                    addLog(jobId, "Notice: Transferred to destination, but could not trash from source. Ensure you have granted full Drive permissions.", isError = true)
+                    addLog(jobId, "Notice: Transferred to destination, but could not trash from source. Ensure you checked the 'Full Drive' permission box during login.", isError = true)
                 }
             }
         } else {
@@ -257,6 +524,106 @@ class TransferRepository(private val context: Context) {
         }
 
         _currentJob.value?.let { onProgressUpdate(it) }
+    }
+
+    /**
+     * Set a batch-wide album name for AI grouping.
+     */
+    fun setBatchAlbumName(jobId: String, name: String) {
+        updateJob(jobId) { it.copy(batchAlbumName = name) }
+    }
+
+    /**
+     * Lightweight download for AI analysis.
+     */
+    suspend fun downloadTempForAnalysis(account: GoogleAccount, item: MediaItem): File? {
+        val result = apiService.downloadToTempFile(account, item) { _, _ -> }
+        return result?.first
+    }
+
+    /**
+     * Finds or creates an album in the destination account by its name.
+     */
+    private suspend fun getOrCreateAlbumId(account: GoogleAccount, name: String): String? = withContext(Dispatchers.IO) {
+        // 1. Check local cache
+        albumCache[name]?.let { return@withContext it }
+        
+        // 2. Search in account
+        val albums = apiService.listAlbums(account)
+        val existing = albums.find { it.second.equals(name, ignoreCase = true) }
+        if (existing != null) {
+            albumCache[name] = existing.first
+            return@withContext existing.first
+        }
+        
+        // 3. Create new if not found
+        val newId = apiService.createAlbum(account, name)
+        if (newId != null) {
+            albumCache[name] = newId
+        }
+        newId
+    }
+
+    /**
+     * Smart Duplicate Detection: Check if a similar file exists in destination account.
+     */
+    suspend fun isSmartDuplicate(accountId: String, item: MediaItem): Boolean {
+        // 1. Exact match by ID (if we moved it ourselves before)
+        try {
+            val transferredIds = db.transferDao().getTransferredMediaIds(accountId)
+            if (item.id in transferredIds) return true
+            
+            // 2. Metadata match: Filename + Size + CreationTime
+            val match = db.transferDao().findRemoteMatch(
+                accountId = accountId,
+                filename = item.filename,
+                size = item.sizeBytes,
+                time = item.creationTime
+            )
+            return match != null
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "DB Error in isSmartDuplicate: ${e.message}")
+            return false
+        }
+    }
+
+    /**
+     * Index destination account media to create a lookup for Smart Duplicate Detection.
+     */
+    suspend fun indexDestinationAccount(account: GoogleAccount) = withContext(Dispatchers.IO) {
+        try {
+            Log.d("TransferRepository", "Indexing destination account: ${account.email}")
+            val validAccount = oauthManager.refreshTokenIfNeededSuspend(account) ?: account
+            
+            var nextToken: String? = null
+            do {
+                val (items, token) = apiService.listMediaItems(validAccount, pageSize = 100, pageToken = nextToken)
+                
+                val metadata = items.map { 
+                    com.photomigrate.app.data.db.RemoteMetadata(
+                        accountId = account.id,
+                        filename = it.filename,
+                        sizeBytes = it.sizeBytes,
+                        creationTime = it.creationTime
+                    )
+                }
+                
+                try {
+                    db.transferDao().insertRemoteMetadata(metadata)
+                } catch (e: Exception) {
+                    Log.e("TransferRepository", "DB Error during indexing insert: ${e.message}")
+                }
+                nextToken = token
+                
+                // Limit indexing to 10,000 recent items to keep it fast
+                // or just continue if needed.
+            } while (nextToken != null && !nextToken.startsWith("DRIVE|")) 
+            // We mostly care about Google Photos items for indexing as that's where duplicates happen.
+            
+            Log.d("TransferRepository", "Finished indexing ${account.email}")
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "Indexing failed: ${e.message}")
+        }
     }
 
     fun pauseJob() {
@@ -277,8 +644,15 @@ class TransferRepository(private val context: Context) {
         }
     }
 
-    fun updateJobStatus(status: JobStatus) {
-        updateJob { it.copy(status = status) }
+    suspend fun updateJobStatus(status: JobStatus) {
+        updateJobSync { 
+            it.copy(
+                status = status,
+                endTime = if (status == JobStatus.COMPLETED || status == JobStatus.FAILED || status == JobStatus.CANCELLED) {
+                    System.currentTimeMillis()
+                } else it.endTime
+            )
+        }
     }
 
     fun forceLog(jobId: String? = null, message: String, isError: Boolean = false) {
