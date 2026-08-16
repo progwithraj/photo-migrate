@@ -24,6 +24,7 @@ import androidx.work.WorkManager
 import com.photomigrate.app.data.auth.OAuthManager
 import com.photomigrate.app.data.model.GoogleAccount
 import com.photomigrate.app.data.model.MediaItem
+import com.photomigrate.app.data.model.TransferJob
 import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.data.repository.TransferRepository
 import com.photomigrate.app.service.TransferWorker
@@ -93,6 +94,7 @@ class MainActivity : ComponentActivity() {
                                         startActivity(browserIntent)
                                     },
                                     onOpenSetupGuide = { navController.navigate("settings") },
+                                    onOpenHistory = { navController.navigate("history") },
                                     onRemoveAccount = { email ->
                                         oauthManager.removeAccount(email)
                                         accounts = oauthManager.getSavedAccounts()
@@ -130,14 +132,15 @@ class MainActivity : ComponentActivity() {
                                     mediaItems = sourceMediaList,
                                     isLoading = isLoadingMedia,
                                     optimizationPreference = oauthManager.getOptimizationPreference(),
+                                    aiOrgEnabled = oauthManager.isAiOrgEnabled(),
                                     onBackClick = { navController.popBackStack() },
-                                    onStartTransfer = { mode, isCompressed, selectedItems ->
+                                    onStartTransfer = { mode, isCompressed, orgMode, selectedItems ->
                                         val sourceAcc = accounts.find { it.id == selectedSourceId }
                                         val destAcc = accounts.find { it.id == selectedDestId }
 
                                         if (sourceAcc != null && destAcc != null) {
                                             lifecycleScope.launch {
-                                                val job = repository.createAndStartJob(sourceAcc, destAcc, mode, isCompressed, selectedItems)
+                                                val job = repository.createAndStartJob(sourceAcc, destAcc, mode, isCompressed, orgMode, selectedItems)
 
                                                 // Enqueue WorkManager background worker
                                                 val workData = Data.Builder()
@@ -146,6 +149,7 @@ class MainActivity : ComponentActivity() {
                                                     .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destAcc.id)
                                                     .putString(TransferWorker.KEY_MODE, mode.name)
                                                     .putBoolean("is_compressed", isCompressed)
+                                                    .putString("org_mode", orgMode.name)
                                                     .build()
 
                                                 val workRequest = OneTimeWorkRequestBuilder<TransferWorker>()
@@ -197,6 +201,31 @@ class MainActivity : ComponentActivity() {
                                         Toast.makeText(this@MainActivity, "Credentials Saved!", Toast.LENGTH_SHORT).show()
                                     },
                                     onBackClick = { navController.popBackStack() }
+                                )
+                            }
+
+                            composable("history") {
+                                val history by produceState<List<TransferJob>>(initialValue = emptyList()) {
+                                    value = repository.getHistory()
+                                }
+                                val totalBytes by produceState<Long>(initialValue = 0L) {
+                                    value = repository.getTotalTransferredBytes()
+                                }
+                                
+                                HistoryScreen(
+                                    history = history,
+                                    totalBytes = totalBytes,
+                                    onBackClick = { navController.popBackStack() },
+                                    onClearHistory = {
+                                        lifecycleScope.launch {
+                                            repository.clearHistory()
+                                            navController.popBackStack()
+                                            Toast.makeText(this@MainActivity, "History Cleared", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onFetchLogs = { jobId ->
+                                        repository.getJobLogs(jobId)
+                                    }
                                 )
                             }
                         }

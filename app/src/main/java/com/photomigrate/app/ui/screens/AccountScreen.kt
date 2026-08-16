@@ -36,6 +36,7 @@ fun AccountScreen(
     onSelectDestAccount: (String) -> Unit,
     onAddAccountClick: () -> Unit,
     onOpenSetupGuide: () -> Unit,
+    onOpenHistory: () -> Unit,
     onRemoveAccount: (String) -> Unit,
     onRefreshAll: () -> Unit,
     onProceedToPicker: () -> Unit
@@ -66,6 +67,13 @@ fun AccountScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onOpenHistory) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = "History",
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                     IconButton(onClick = onOpenSetupGuide) {
                         Icon(
                             imageVector = Icons.Default.Settings,

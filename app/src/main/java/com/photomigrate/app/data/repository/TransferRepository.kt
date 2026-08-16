@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TransferRepository(private val context: Context) {
 
@@ -33,6 +35,8 @@ class TransferRepository(private val context: Context) {
     private val oauthManager = OAuthManager(context)
     private val db = TransferDatabase.getDatabase(context)
     private val gson = Gson()
+
+    private val albumCache = mutableMapOf<String, String>() // Title to ID map
 
     private val _currentJob = MutableStateFlow<TransferJob?>(null)
     val currentJob: StateFlow<TransferJob?> = _currentJob.asStateFlow()
@@ -126,42 +130,128 @@ class TransferRepository(private val context: Context) {
         destinationAccount: GoogleAccount,
         mode: TransferMode,
         isCompressed: Boolean,
+        orgMode: OrganizationMode,
         selectedItems: List<MediaItem>
     ): TransferJob = withContext(Dispatchers.IO) {
         val job = TransferJob(
             sourceAccountId = sourceAccount.id,
             destinationAccountId = destinationAccount.id,
             mode = mode,
+            orgMode = orgMode,
+            batchAlbumName = null,
             isCompressionEnabled = isCompressed,
             selectedMediaIds = selectedItems.map { it.id },
             totalItems = selectedItems.size,
             totalBytes = selectedItems.sumOf { it.sizeBytes },
             status = JobStatus.RUNNING,
-            logs = listOf(TransferLog(message = "Job initialized: ${selectedItems.size} items queued for ${mode.name} mode (Storage Saver: $isCompressed)."))
+            logs = listOf(TransferLog(message = "Job initialized: ${selectedItems.size} items queued for ${mode.name} mode (Storage Saver: $isCompressed, AI: ${orgMode != OrganizationMode.NONE})."))
         )
+        
+        // Clear album cache for new job
+        albumCache.clear()
         
         // Persist queue to database to bypass WorkManager data limits
         val queuedItems = selectedItems.map { QueuedItem(job.id, it.id) }
         db.transferDao().insertQueuedItems(queuedItems)
         
+        // Persist job to history
+        db.transferDao().insertJob(job.toEntity())
+        job.logs.forEach { db.transferDao().insertLog(it.toEntity(job.id)) }
+        
         _currentJob.value = job
         job
+    }
+
+    suspend fun getHistory(): List<TransferJob> = withContext(Dispatchers.IO) {
+        db.transferDao().getAllJobs().map { it.toModel() }
+    }
+
+    suspend fun getJobLogs(jobId: String): List<TransferLog> = withContext(Dispatchers.IO) {
+        db.transferDao().getLogsForJob(jobId).map { it.toModel() }
     }
 
     suspend fun getQueuedMediaIds(jobId: String): List<String> = withContext(Dispatchers.IO) {
         db.transferDao().getQueuedMediaIds(jobId)
     }
 
+    suspend fun clearHistory() = withContext(Dispatchers.IO) {
+        db.transferDao().clearHistory()
+    }
+    
+    suspend fun getTotalTransferredBytes(): Long = withContext(Dispatchers.IO) {
+        db.transferDao().getTotalTransferredBytes() ?: 0L
+    }
+
     private fun updateJob(jobId: String? = null, reducer: (TransferJob) -> TransferJob) {
         val current = _currentJob.value ?: return
-        // If a jobId is provided, only update if it matches the current active job.
         if (jobId != null && current.id != jobId) return 
-        _currentJob.value = reducer(current)
+        val updated = reducer(current)
+        _currentJob.value = updated
+        
+        // Persist update to DB (async)
+        CoroutineScope(Dispatchers.IO).launch {
+            db.transferDao().updateJob(updated.toEntity())
+        }
     }
 
     private fun addLog(jobId: String? = null, message: String, isError: Boolean = false) {
-        updateJob(jobId) { it.copy(logs = it.logs + TransferLog(message = message, isError = isError)) }
+        val log = TransferLog(message = message, isError = isError)
+        updateJob(jobId) { it.copy(logs = it.logs + log) }
+        
+        // Persist log to DB
+        jobId?.let { id ->
+            CoroutineScope(Dispatchers.IO).launch {
+                db.transferDao().insertLog(log.toEntity(id))
+            }
+        }
     }
+
+    private fun TransferJob.toEntity() = com.photomigrate.app.data.db.TransferJobEntity(
+        id = id,
+        sourceAccountId = sourceAccountId,
+        destinationAccountId = destinationAccountId,
+        mode = mode.name,
+        orgMode = orgMode.name,
+        batchAlbumName = batchAlbumName,
+        totalItems = totalItems,
+        completedItems = completedItems,
+        failedItems = failedItems,
+        totalBytes = totalBytes,
+        transferredBytes = transferredBytes,
+        status = status.name,
+        startTime = startTime,
+        endTime = endTime
+    )
+
+    private fun com.photomigrate.app.data.db.TransferJobEntity.toModel() = TransferJob(
+        id = id,
+        sourceAccountId = sourceAccountId,
+        destinationAccountId = destinationAccountId,
+        mode = TransferMode.valueOf(mode),
+        orgMode = OrganizationMode.valueOf(orgMode),
+        batchAlbumName = batchAlbumName,
+        totalItems = totalItems,
+        completedItems = completedItems,
+        failedItems = failedItems,
+        totalBytes = totalBytes,
+        transferredBytes = transferredBytes,
+        status = JobStatus.valueOf(status),
+        startTime = startTime,
+        endTime = endTime
+    )
+
+    private fun TransferLog.toEntity(jobId: String) = com.photomigrate.app.data.db.JobLogEntity(
+        jobId = jobId,
+        timestamp = timestamp,
+        message = message,
+        isError = isError
+    )
+
+    private fun com.photomigrate.app.data.db.JobLogEntity.toModel() = TransferLog(
+        timestamp = timestamp,
+        message = message,
+        isError = isError
+    )
 
     /**
      * Executes the transfer loop item by item.
@@ -173,6 +263,7 @@ class TransferRepository(private val context: Context) {
         mode: TransferMode,
         jobId: String,
         isCompressed: Boolean = false,
+        orgMode: OrganizationMode = OrganizationMode.NONE,
         onProgressUpdate: (TransferJob) -> Unit
     ) = withContext(Dispatchers.IO) {
         // Step 1: Ensure OAuth Tokens are valid
@@ -259,11 +350,37 @@ class TransferRepository(private val context: Context) {
         _currentJob.value?.let { onProgressUpdate(it) }
 
         lastUpdate = 0L
+        
+        // Smart AI Organization Step: Determine target album
+        var targetAlbumId: String? = null
+        if (orgMode != OrganizationMode.NONE && item.mimeType.startsWith("image/")) {
+            val albumName = when (orgMode) {
+                OrganizationMode.BY_DATE -> {
+                    // Extract Month Year from creationTime (e.g. 2026-08-16T... -> August 2026)
+                    val date = SimpleDateFormat("yyyy-MM", Locale.US).parse(item.creationTime.take(7))
+                    date?.let { SimpleDateFormat("MMMM yyyy", Locale.US).format(it) } ?: "Migrated Photos"
+                }
+                OrganizationMode.BY_CONTENT -> {
+                    // Use the consensus batch name decided during pre-analysis
+                    _currentJob.value?.batchAlbumName ?: "Other"
+                }
+                else -> null
+            }
+            
+            if (albumName != null) {
+                targetAlbumId = getOrCreateAlbumId(validDest, albumName)
+                if (targetAlbumId != null) {
+                    addLog(jobId, "Sorting into album: '$albumName'")
+                }
+            }
+        }
+
         val uploadResult = apiService.uploadMediaToDestination(
             destinationAccount = validDest,
             file = fileToUpload,
             filename = item.filename,
-            mimeType = item.mimeType
+            mimeType = item.mimeType,
+            albumId = targetAlbumId
         ) { uploadedBytes, totalBytes ->
             val now = System.currentTimeMillis()
             // Throttle UI updates to every 300ms
@@ -325,6 +442,44 @@ class TransferRepository(private val context: Context) {
         }
 
         _currentJob.value?.let { onProgressUpdate(it) }
+    }
+
+    /**
+     * Set a batch-wide album name for AI grouping.
+     */
+    fun setBatchAlbumName(jobId: String, name: String) {
+        updateJob(jobId) { it.copy(batchAlbumName = name) }
+    }
+
+    /**
+     * Lightweight download for AI analysis.
+     */
+    suspend fun downloadTempForAnalysis(account: GoogleAccount, item: MediaItem): File? {
+        val result = apiService.downloadToTempFile(account, item) { _, _ -> }
+        return result?.first
+    }
+
+    /**
+     * Finds or creates an album in the destination account by its name.
+     */
+    private suspend fun getOrCreateAlbumId(account: GoogleAccount, name: String): String? = withContext(Dispatchers.IO) {
+        // 1. Check local cache
+        albumCache[name]?.let { return@withContext it }
+        
+        // 2. Search in account
+        val albums = apiService.listAlbums(account)
+        val existing = albums.find { it.second.equals(name, ignoreCase = true) }
+        if (existing != null) {
+            albumCache[name] = existing.first
+            return@withContext existing.first
+        }
+        
+        // 3. Create new if not found
+        val newId = apiService.createAlbum(account, name)
+        if (newId != null) {
+            albumCache[name] = newId
+        }
+        newId
     }
 
     /**
@@ -400,7 +555,14 @@ class TransferRepository(private val context: Context) {
     }
 
     fun updateJobStatus(status: JobStatus) {
-        updateJob { it.copy(status = status) }
+        updateJob { 
+            it.copy(
+                status = status,
+                endTime = if (status == JobStatus.COMPLETED || status == JobStatus.FAILED || status == JobStatus.CANCELLED) {
+                    System.currentTimeMillis()
+                } else it.endTime
+            )
+        }
     }
 
     fun forceLog(jobId: String? = null, message: String, isError: Boolean = false) {

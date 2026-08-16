@@ -192,6 +192,40 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.outlineVariant
             )
 
+            // Section: AI Features
+            Text(
+                text = "AI Features (Experimental)",
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                var aiEnabled by remember { mutableStateOf(oauthManager.isAiOrgEnabled()) }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Smart Organization", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(
+                            "Use on-device AI to automatically group photos into albums based on their content (e.g., Nature, Pets).",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = aiEnabled,
+                        onCheckedChange = {
+                            aiEnabled = it
+                            oauthManager.setAiOrgEnabled(it)
+                        }
+                    )
+                }
+            }
+
             // Section: Advanced
             Row(
                 modifier = Modifier

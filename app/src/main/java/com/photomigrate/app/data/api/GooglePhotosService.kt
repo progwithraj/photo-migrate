@@ -340,6 +340,7 @@ class GooglePhotosService(private val context: Context) {
         file: File,
         filename: String,
         mimeType: String,
+        albumId: String? = null,
         onProgress: (Long, Long) -> Unit
     ): String? {
         // Step 1: Upload raw bytes to uploads endpoint
@@ -386,19 +387,24 @@ class GooglePhotosService(private val context: Context) {
 
             // Step 2: Call batchCreate to attach uploaded bytes to Google Photos library
             val batchUrl = "$PHOTOS_BASE_URL/mediaItems:batchCreate"
-            val jsonPayload = mapOf(
-                "newMediaItems" to listOf(
-                    mapOf(
-                        "description" to "Migrated via PhotoMigrate App",
-                        "simpleMediaItem" to mapOf(
-                            "fileName" to filename,
-                            "uploadToken" to uploadToken
-                        )
-                    )
+            
+            val newMediaItem = mapOf(
+                "description" to "Migrated via PhotoMigrate App",
+                "simpleMediaItem" to mapOf(
+                    "fileName" to filename,
+                    "uploadToken" to uploadToken
                 )
             )
 
-            val batchRequestBody = gson.toJson(jsonPayload).toRequestBody("application/json".toMediaType())
+            val payload = mutableMapOf<String, Any>(
+                "newMediaItems" to listOf(newMediaItem)
+            )
+            
+            if (!albumId.isNullOrEmpty()) {
+                payload["albumId"] = albumId
+            }
+
+            val batchRequestBody = gson.toJson(payload).toRequestBody("application/json".toMediaType())
             val batchRequest = Request.Builder()
                 .url(batchUrl)
                 .addHeader("Authorization", "Bearer ${destinationAccount.accessToken}")
@@ -433,6 +439,61 @@ class GooglePhotosService(private val context: Context) {
             if (resp.isSuccessful) "drive_upload_success" else null
         } catch (e: Exception) {
             null
+        }
+    }
+
+    /**
+     * Creates a new album in the destination account.
+     */
+    fun createAlbum(account: GoogleAccount, title: String): String? {
+        val url = "$PHOTOS_BASE_URL/albums"
+        val payload = mapOf("album" to mapOf("title" to title))
+        val body = gson.toJson(payload).toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer ${account.accessToken}")
+            .post(body)
+            .build()
+
+        return try {
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val json = gson.fromJson(response.body?.string(), Map::class.java)
+                json["id"] as? String
+            } else {
+                Log.e("GooglePhotosService", "Create album failed: ${response.code}")
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Lists existing albums to find one by title.
+     */
+    fun listAlbums(account: GoogleAccount): List<Pair<String, String>> {
+        val url = "$PHOTOS_BASE_URL/albums?pageSize=50"
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer ${account.accessToken}")
+            .get()
+            .build()
+
+        return try {
+            val response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val json = gson.fromJson(response.body?.string(), Map::class.java)
+                val rawAlbums = json["albums"] as? List<Map<*, *>> ?: emptyList()
+                rawAlbums.mapNotNull { 
+                    val id = it["id"] as? String
+                    val title = it["title"] as? String
+                    if (id != null && title != null) id to title else null
+                }
+            } else emptyList()
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 
