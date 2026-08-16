@@ -91,6 +91,9 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+    implementation("com.google.mlkit:image-labeling:17.0.9")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     // Background WorkManager & Security
     implementation("androidx.work:work-runtime-ktx:2.9.0")

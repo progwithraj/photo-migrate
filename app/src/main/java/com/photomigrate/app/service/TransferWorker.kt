@@ -7,6 +7,7 @@ import android.os.Build
 import android.content.pm.ServiceInfo
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import java.io.File
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
@@ -46,6 +47,9 @@ class TransferWorker(
         val modeName = inputData.getString(KEY_MODE) ?: TransferMode.COPY.name
         val mode = TransferMode.valueOf(modeName)
 
+        val orgModeName = inputData.getString("org_mode") ?: com.photomigrate.app.data.model.OrganizationMode.NONE.name
+        val orgMode = com.photomigrate.app.data.model.OrganizationMode.valueOf(orgModeName)
+
         val accounts = oauthManager.getSavedAccounts()
         val sourceAccount = accounts.find { it.id == sourceId } ?: return Result.failure()
         val destAccount = accounts.find { it.id == destId } ?: return Result.failure()
@@ -66,6 +70,31 @@ class TransferWorker(
             repository.updateJobStatus(JobStatus.FAILED)
             repository.forceLog(jobId, "Error: Could not retrieve metadata for selected items.", true)
             return Result.success()
+        }
+
+        // BATCH AI ANALYSIS PHASE
+        if (orgMode == com.photomigrate.app.data.model.OrganizationMode.BY_CONTENT) {
+            repository.forceLog(jobId, "AI BATCH ANALYSIS: Scanning selected photos for consensus category...")
+            
+            // Analyze up to 5 items to find dominant category
+            val sampleItems = selectedItems.take(5)
+            val labels = mutableListOf<String>()
+            
+            for (item in sampleItems) {
+                repository.forceLog(jobId, "AI: Analyzing sample '${item.filename}'...")
+                val downloadResult: File? = repository.downloadTempForAnalysis(sourceAccount, item)
+                if (downloadResult != null) {
+                    val label = com.photomigrate.app.util.MediaAnalyzer.analyzeImageContent(downloadResult)
+                    if (label != null) labels.add(label)
+                    downloadResult.delete()
+                }
+            }
+            
+            val dominantLabel = labels.groupBy { it }
+                .maxByOrNull { it.value.size }?.key ?: "Other"
+            
+            repository.setBatchAlbumName(jobId, dominantLabel)
+            repository.forceLog(jobId, "AI BATCH ANALYSIS: Consensus reached. Using album '$dominantLabel' for this batch.")
         }
 
         // The job was already created in MainActivity, we just start processing.
@@ -94,12 +123,18 @@ class TransferWorker(
                 val notificationText = "Syncing ${index + 1}/${selectedItems.size}: ${item.filename}"
                 setForeground(createForegroundInfo(notificationText, progressPercent, 100))
 
+                val isCompressed = inputData.getBoolean("is_compressed", false)
+                val orgModeName = inputData.getString("org_mode") ?: com.photomigrate.app.data.model.OrganizationMode.NONE.name
+                val orgMode = com.photomigrate.app.data.model.OrganizationMode.valueOf(orgModeName)
+
                 repository.processNextMediaItem(
                     sourceAccount = sourceAccount,
                     destinationAccount = destAccount,
                     item = item,
                     mode = mode,
-                    jobId = jobId
+                    jobId = jobId,
+                    isCompressed = isCompressed,
+                    orgMode = orgMode
                 ) { updatedJob ->
                     // Update live job state
                 }

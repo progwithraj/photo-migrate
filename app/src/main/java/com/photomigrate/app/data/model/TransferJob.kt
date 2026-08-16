@@ -7,6 +7,12 @@ enum class TransferMode {
     MOVE  // Copy to destination, then delete from source account to free storage
 }
 
+enum class OrganizationMode {
+    NONE,
+    BY_DATE,   // e.g. "August 2026"
+    BY_CONTENT // Using AI Content Analysis
+}
+
 enum class JobStatus {
     IDLE,
     PREPARING,
@@ -28,6 +34,9 @@ data class TransferJob(
     val sourceAccountId: String,
     val destinationAccountId: String,
     val mode: TransferMode = TransferMode.COPY,
+    val orgMode: OrganizationMode = OrganizationMode.NONE,
+    val batchAlbumName: String? = null, // Consensus album name for AI grouping
+    val isCompressionEnabled: Boolean = false,
     val selectedMediaIds: List<String> = emptyList(),
     val totalItems: Int = 0,
     val completedItems: Int = 0,
@@ -36,6 +45,8 @@ data class TransferJob(
     val transferredBytes: Long = 0L,
     val speedBytesPerSec: Long = 0L,
     val speedHistory: List<Long> = emptyList(), // History for trend line
+    val startTime: Long = System.currentTimeMillis(),
+    val endTime: Long? = null,
     val status: JobStatus = JobStatus.IDLE,
     val logs: List<TransferLog> = emptyList()
 ) {

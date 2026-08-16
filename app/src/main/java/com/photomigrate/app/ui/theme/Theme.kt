@@ -51,28 +51,47 @@ fun PhotoMigrateTheme(
         else -> darkTheme
     }
 
+    // Determine if we need light or dark text on the primary color
+    val onPrimaryColor = when (appTheme) {
+        AppTheme.AMOLED, AppTheme.AMBER -> Color.Black
+        else -> Color.White
+    }
+
     var colorScheme = if (effectiveDarkTheme) {
-        DarkColorScheme.copy(primary = themeColors.primary)
+        DarkColorScheme.copy(primary = themeColors.primary, onPrimary = onPrimaryColor)
     } else {
-        LightColorScheme.copy(primary = themeColors.primary)
+        LightColorScheme.copy(primary = themeColors.primary, onPrimary = onPrimaryColor)
     }
 
     // Custom background overrides for specific themes
     colorScheme = when (appTheme) {
         AppTheme.AMOLED -> colorScheme.copy(
+            primary = Color.White,
+            onPrimary = Color.Black,
             background = Color.Black,
             surface = Color.Black,
-            surfaceVariant = Color.Black
+            surfaceVariant = Color(0xFF1C1C1E),
+            onSurface = Color.White,
+            onSurfaceVariant = Color.LightGray,
+            onBackground = Color.White
         )
         AppTheme.DRACULA -> colorScheme.copy(
+            onPrimary = Color.Black,
             background = Color(0xFF282A36),
             surface = Color(0xFF282A36),
-            surfaceVariant = Color(0xFF44475A)
+            surfaceVariant = Color(0xFF44475A),
+            onSurface = Color.White,
+            onSurfaceVariant = Color.LightGray,
+            onBackground = Color.White
         )
         AppTheme.SYNTHWAVE -> colorScheme.copy(
+            onPrimary = Color.Black,
             background = Color(0xFF241734),
             surface = Color(0xFF241734),
-            surfaceVariant = Color(0xFF2D1B4E)
+            surfaceVariant = Color(0xFF2D1B4E),
+            onSurface = Color.White,
+            onSurfaceVariant = Color.LightGray,
+            onBackground = Color.White
         )
         else -> colorScheme
     }

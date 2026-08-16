@@ -1,6 +1,9 @@
 package com.photomigrate.app.ui.screens
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -16,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.photomigrate.app.data.auth.OAuthManager
 import com.photomigrate.app.data.model.MediaItem
 import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.ui.components.GlassCard
@@ -26,15 +30,76 @@ import com.photomigrate.app.ui.components.MediaItemGridCard
 fun MediaPickerScreen(
     mediaItems: List<MediaItem>,
     isLoading: Boolean,
+    optimizationPreference: String = OAuthManager.OPT_ASK,
+    aiOrgEnabled: Boolean = false,
     onBackClick: () -> Unit,
-    onStartTransfer: (TransferMode, List<MediaItem>) -> Unit
+    onStartTransfer: (TransferMode, Boolean, com.photomigrate.app.data.model.OrganizationMode, List<MediaItem>) -> Unit
 ) {
     var selectedIds by remember { mutableStateOf(emptySet<String>()) }
     var selectedMode by remember { mutableStateOf(TransferMode.MOVE) }
     var batchSize by remember { mutableStateOf(100) }
+    
+    var showQualityDialog by remember { mutableStateOf(false) }
+    var selectedOrgMode by remember { mutableStateOf(com.photomigrate.app.data.model.OrganizationMode.NONE) }
 
     val totalSelectedCount = selectedIds.size
     val allSelected = totalSelectedCount > 0 && totalSelectedCount == mediaItems.size
+
+    if (showQualityDialog) {
+        AlertDialog(
+            onDismissRequest = { showQualityDialog = false },
+            title = { Text("Transfer Options", fontWeight = FontWeight.Bold) },
+            text = { 
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Select how you want to move your photos:")
+                    
+                    if (aiOrgEnabled) {
+                        Text("AI Organization", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.NONE }) {
+                            RadioButton(selected = selectedOrgMode == com.photomigrate.app.data.model.OrganizationMode.NONE, onClick = { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.NONE })
+                            Text("Original Library (No Sorting)", fontSize = 14.sp)
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_DATE }) {
+                            RadioButton(selected = selectedOrgMode == com.photomigrate.app.data.model.OrganizationMode.BY_DATE, onClick = { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_DATE })
+                            Text("Group by Date (e.g. Aug 2026)", fontSize = 14.sp)
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_CONTENT }) {
+                            RadioButton(selected = selectedOrgMode == com.photomigrate.app.data.model.OrganizationMode.BY_CONTENT, onClick = { selectedOrgMode = com.photomigrate.app.data.model.OrganizationMode.BY_CONTENT })
+                            Text("Smart AI Grouping (Nature, Pets...)", fontSize = 14.sp)
+                        }
+                        
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    }
+                    
+                    Text("Quality", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    Text("Choose whether to compress images to save storage.", fontSize = 14.sp)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showQualityDialog = false
+                        val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
+                        onStartTransfer(selectedMode, true, selectedOrgMode, itemsToTransfer)
+                    }
+                ) {
+                    Text("Storage Saver")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showQualityDialog = false
+                        val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
+                        onStartTransfer(selectedMode, false, selectedOrgMode, itemsToTransfer)
+                    }
+                ) {
+                    Text("Original Quality")
+                }
+            }
+        )
+    }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -71,8 +136,9 @@ fun MediaPickerScreen(
                         selectedIds = if (allSelected) emptySet() else mediaItems.map { it.id }.toSet()
                     }) {
                         Text(
-                            if (allSelected) "None" else "All",
-                            fontWeight = FontWeight.Bold
+                            text = if (allSelected) "None" else "All",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -98,7 +164,7 @@ fun MediaPickerScreen(
                                 FilterChip(
                                     selected = batchSize == size,
                                     onClick = { batchSize = size },
-                                    label = { Text("$size") },
+                                    label = { Text(size.toString()) },
                                     shape = RoundedCornerShape(12.dp)
                                 )
                             }
@@ -130,12 +196,24 @@ fun MediaPickerScreen(
                 Button(
                     onClick = { 
                         val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
-                        onStartTransfer(selectedMode, itemsToTransfer) 
+                        // Show popup if:
+                        // 1. User needs to pick quality (ASK)
+                        // 2. User HAS enabled AI features in settings (they need to pick organization)
+                        if (optimizationPreference == OAuthManager.OPT_ASK || aiOrgEnabled) {
+                            showQualityDialog = true
+                        } else {
+                            // Fast transfer using settings defaults
+                            val isCompressed = optimizationPreference == OAuthManager.OPT_YES
+                            onStartTransfer(selectedMode, isCompressed, selectedOrgMode, itemsToTransfer)
+                        }
                     },
                     enabled = totalSelectedCount > 0,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(26.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
                     Text(
                         "Start Migration ($totalSelectedCount)",
