@@ -139,8 +139,13 @@ fun HistoryScreen(
 
 @Composable
 fun AnalyticsHeader(totalBytes: Long, jobCount: Int) {
-    val totalGb = totalBytes.toDouble() / (1024.0 * 1024.0 * 1024.0)
+    val totalMb = totalBytes.toDouble() / (1024.0 * 1024.0)
+    val totalGb = totalMb / 1024.0
     
+    val showInGb = totalGb >= 0.01
+    val displayValue = if (showInGb) totalGb else totalMb
+    val unitText = if (showInGb) " GB" else " MB"
+
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -152,13 +157,13 @@ fun AnalyticsHeader(totalBytes: Long, jobCount: Int) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = String.format(Locale.US, "%.2f", totalGb),
+                        text = String.format(Locale.US, "%.2f", displayValue),
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = " GB",
+                        text = unitText,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

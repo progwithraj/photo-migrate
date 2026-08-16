@@ -110,7 +110,7 @@ interface TransferDao {
     suspend fun clearHistory()
 }
 
-@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class, TransferJobEntity::class, JobLogEntity::class], version = 5, exportSchema = false)
+@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class, TransferJobEntity::class, JobLogEntity::class], version = 7, exportSchema = false)
 abstract class TransferDatabase : RoomDatabase() {
     abstract fun transferDao(): TransferDao
 

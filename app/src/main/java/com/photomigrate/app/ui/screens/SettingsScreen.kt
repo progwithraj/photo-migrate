@@ -340,6 +340,35 @@ fun SettingsScreen(
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    // Danger Zone
+                    Text(
+                        text = "Danger Zone",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    
+                    Button(
+                        onClick = {
+                            oauthManager.setAiOrgEnabled(false) // Reset prefs too
+                            // Using a simple thread for the reset to avoid complex scope issues in this one-off task
+                            Thread {
+                                com.photomigrate.app.data.db.TransferDatabase.getDatabase(context).clearAllTables()
+                            }.start()
+                            android.widget.Toast.makeText(context, "Database Cleared! Please restart the app.", android.widget.Toast.LENGTH_LONG).show()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f), contentColor = MaterialTheme.colorScheme.error),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.DeleteForever, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Reset App Database")
+                    }
                 }
             }
         }

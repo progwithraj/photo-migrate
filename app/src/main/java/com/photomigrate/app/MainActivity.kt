@@ -119,7 +119,10 @@ class MainActivity : ComponentActivity() {
                                         if (sourceAccount != null) {
                                             // Load media in background
                                             lifecycleScope.launch {
-                                                repository.loadSourceMedia(sourceAccount, destAccount)
+                                                val result = repository.loadSourceMedia(sourceAccount, destAccount)
+                                                if (result.isEmpty()) {
+                                                    Toast.makeText(this@MainActivity, "No photos found or connection error.", Toast.LENGTH_LONG).show()
+                                                }
                                             }
                                             navController.navigate("picker")
                                         }
