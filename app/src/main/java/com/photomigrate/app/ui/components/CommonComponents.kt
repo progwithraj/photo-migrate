@@ -1,6 +1,7 @@
 package com.photomigrate.app.ui.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,14 +13,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -358,6 +364,86 @@ fun MediaItemGridCard(
                     modifier = Modifier.size(12.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun PremiumLoader(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "PremiumLoader")
+    
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "Rotation"
+    )
+
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "Scale"
+    )
+
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+
+    Box(
+        modifier = modifier.size(120.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Outer pulsing ring
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .graphicsLayer(scaleX = scale, scaleY = scale, alpha = 0.3f)
+                .border(2.dp, primaryColor, CircleShape)
+        )
+
+        // The "Solving Cube" animation
+        Canvas(modifier = Modifier.size(48.dp).graphicsLayer(rotationZ = rotation)) {
+            val cubeSize = size.width
+            drawRect(
+                color = primaryColor,
+                style = Stroke(width = 4.dp.toPx()),
+                size = Size(cubeSize, cubeSize)
+            )
+            
+            // Nested offset squares to give a 3D solving feel
+            drawRect(
+                color = secondaryColor,
+                style = Stroke(width = 2.dp.toPx()),
+                size = Size(cubeSize * 0.6f, cubeSize * 0.6f),
+                topLeft = Offset(cubeSize * 0.2f, cubeSize * 0.2f)
+            )
+        }
+
+        // Floating "Data Bits"
+        Canvas(modifier = Modifier.size(100.dp).graphicsLayer(rotationZ = -rotation * 0.5f)) {
+            val orbitRadius = size.width / 2
+            drawCircle(
+                color = primaryColor,
+                radius = 3.dp.toPx(),
+                center = Offset(
+                    center.x + orbitRadius * 0.8f,
+                    center.y
+                )
+            )
+            drawCircle(
+                color = secondaryColor,
+                radius = 3.dp.toPx(),
+                center = Offset(
+                    center.x - orbitRadius * 0.8f,
+                    center.y
+                )
+            )
         }
     }
 }

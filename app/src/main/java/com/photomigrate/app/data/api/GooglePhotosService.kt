@@ -121,6 +121,60 @@ class GooglePhotosService(private val context: Context) {
     }
 
     /**
+     * Lists media items in a specific album.
+     */
+    fun listMediaItemsInAlbum(account: GoogleAccount, albumId: String, pageSize: Int = 100, pageToken: String? = null): Pair<List<MediaItem>, String?> {
+        val url = "$PHOTOS_BASE_URL/mediaItems:search"
+        val payload = mutableMapOf<String, Any>(
+            "albumId" to albumId,
+            "pageSize" to pageSize
+        )
+        if (!pageToken.isNullOrEmpty()) {
+            payload["pageToken"] = pageToken
+        }
+        
+        val body = gson.toJson(payload).toRequestBody("application/json".toMediaType())
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer ${account.accessToken}")
+            .post(body)
+            .build()
+
+        return try {
+            val response = client.newCall(request).execute()
+            val responseBody = response.body?.string() ?: ""
+            if (!response.isSuccessful) return Pair(emptyList(), null)
+
+            val json = gson.fromJson(responseBody, Map::class.java)
+            val rawItems = json["mediaItems"] as? List<Map<*, *>> ?: emptyList()
+            val nextToken = json["nextPageToken"] as? String
+
+            val mediaItems = rawItems.mapNotNull { itemMap ->
+                val id = itemMap["id"] as? String ?: return@mapNotNull null
+                val filename = itemMap["filename"] as? String ?: "photo_$id.jpg"
+                val mimeType = itemMap["mimeType"] as? String ?: "image/jpeg"
+                val baseUrl = itemMap["baseUrl"] as? String ?: ""
+                val mediaMetadata = itemMap["mediaMetadata"] as? Map<*, *>
+                val creationTime = mediaMetadata?.get("creationTime") as? String ?: ""
+
+                MediaItem(
+                    id = id,
+                    filename = filename,
+                    mimeType = mimeType,
+                    sizeBytes = 0L, 
+                    baseUrl = baseUrl,
+                    thumbnailUrl = if (baseUrl.isNotEmpty()) "$baseUrl=w256-h256" else "",
+                    creationTime = creationTime,
+                    accountId = account.id
+                )
+            }
+            Pair(mediaItems, nextToken)
+        } catch (e: Exception) {
+            Pair(emptyList(), null)
+        }
+    }
+
+    /**
      * Fetches metadata for specific media items by their IDs.
      */
     suspend fun fetchMediaItemsByIds(account: GoogleAccount, ids: List<String>): List<MediaItem> = withContext(Dispatchers.IO) {
