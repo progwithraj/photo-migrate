@@ -3,33 +3,33 @@ package com.photomigrate.app.ui.screens
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.photomigrate.app.data.auth.OAuthManager
 import com.photomigrate.app.data.model.MediaItem
-import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.data.model.OrganizationMode
+import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.MediaItemGridCard
 import com.photomigrate.app.ui.components.PremiumLoader
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,11 +39,12 @@ fun MediaPickerScreen(
     optimizationPreference: String = OAuthManager.OPT_ASK,
     aiOrgEnabled: Boolean = false,
     onBackClick: () -> Unit,
+    onMoveToVault: (List<MediaItem>) -> Unit,
     onStartTransfer: (TransferMode, Boolean, OrganizationMode, List<MediaItem>) -> Unit
 ) {
     var selectedIds by remember { mutableStateOf(emptySet<String>()) }
     var selectedMode by remember { mutableStateOf(TransferMode.MOVE) }
-    var batchSize by remember { mutableStateOf(100) }
+    var batchSize by remember { mutableIntStateOf(100) }
     
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabTitles = listOf("Images", "Videos")
@@ -242,29 +243,48 @@ fun MediaPickerScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = { 
-                        val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
-                        if (optimizationPreference == OAuthManager.OPT_ASK || aiOrgEnabled) {
-                            showQualityDialog = true
-                        } else {
-                            val isCompressed = optimizationPreference == OAuthManager.OPT_YES
-                            onStartTransfer(selectedMode, isCompressed, selectedOrgMode, itemsToTransfer)
-                        }
-                    },
-                    enabled = totalSelectedCount > 0,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(26.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    Text(
-                        "Start Migration ($totalSelectedCount)",
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 16.sp
-                    )
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = { 
+                            val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
+                            if (optimizationPreference == OAuthManager.OPT_ASK || aiOrgEnabled) {
+                                showQualityDialog = true
+                            } else {
+                                val isCompressed = optimizationPreference == OAuthManager.OPT_YES
+                                onStartTransfer(selectedMode, isCompressed, selectedOrgMode, itemsToTransfer)
+                            }
+                        },
+                        enabled = totalSelectedCount > 0,
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(26.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text(
+                            "Migrate ($totalSelectedCount)",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    OutlinedButton(
+                        onClick = { 
+                            val items = mediaItems.filter { it.id in selectedIds }
+                            onMoveToVault(items)
+                        },
+                        enabled = totalSelectedCount > 0,
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(26.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.Security, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Vault", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
