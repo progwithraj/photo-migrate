@@ -9,6 +9,7 @@ import com.photomigrate.app.data.auth.OAuthManager
 import com.photomigrate.app.data.db.QueuedItem
 import com.photomigrate.app.data.db.TransferDatabase
 import com.photomigrate.app.data.db.TransferredFile
+import com.photomigrate.app.data.db.VaultItemEntity
 import com.photomigrate.app.data.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,7 @@ class TransferRepository(private val context: Context) {
     private val oauthManager = OAuthManager(context)
     private val db = TransferDatabase.getDatabase(context)
     private val gson = Gson()
+    private val vaultManager = com.photomigrate.app.util.VaultManager(context)
 
     private val albumCache = mutableMapOf<String, String>() // Title to ID map
 
@@ -260,6 +262,63 @@ class TransferRepository(private val context: Context) {
             0L
         }
     }
+
+    // --- Secure Vault Functions ---
+
+    suspend fun getVaultItems(): List<VaultItemEntity> = withContext(Dispatchers.IO) {
+        try {
+            db.transferDao().getAllVaultItems()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun moveToVault(account: GoogleAccount, item: MediaItem) = withContext(Dispatchers.IO) {
+        try {
+            val validAccount = oauthManager.refreshTokenIfNeededSuspend(account) ?: account
+            
+            // 1. Download to temp
+            val downloadResult = apiService.downloadToTempFile(validAccount, item) { _, _ -> }
+            if (downloadResult == null) return@withContext false
+
+            val (tempFile, _) = downloadResult
+
+            // 2. Encrypt and save to vault
+            val encryptedFile = vaultManager.encryptAndSave(tempFile.inputStream(), item.filename)
+            tempFile.delete()
+
+            if (encryptedFile != null) {
+                // 3. Save metadata to DB
+                val vaultItem = VaultItemEntity(
+                    id = item.id,
+                    filename = item.filename,
+                    mimeType = item.mimeType,
+                    sizeBytes = item.sizeBytes,
+                    localEncryptedPath = encryptedFile.absolutePath
+                )
+                db.transferDao().insertVaultItem(vaultItem)
+                
+                // 4. Optionally trash from cloud if it's a "move"
+                apiService.deleteFromSourceAccount(validAccount, item.id, item.filename)
+                true
+            } else false
+        } catch (e: Exception) {
+            Log.e("TransferRepository", "Error moving to vault: ${e.message}")
+            false
+        }
+    }
+
+    suspend fun deleteFromVault(item: VaultItemEntity) = withContext(Dispatchers.IO) {
+        try {
+            vaultManager.deleteFile(item.localEncryptedPath)
+            db.transferDao().deleteVaultItem(item.id)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun getVaultManager() = vaultManager
 
     private suspend fun updateJobSync(jobId: String? = null, reducer: (TransferJob) -> TransferJob) {
         val current = _currentJob.value ?: return
@@ -569,7 +628,7 @@ class TransferRepository(private val context: Context) {
     /**
      * Lightweight download for AI analysis.
      */
-    suspend fun downloadTempForAnalysis(account: GoogleAccount, item: MediaItem): File? {
+    fun downloadTempForAnalysis(account: GoogleAccount, item: MediaItem): File? {
         val result = apiService.downloadToTempFile(account, item) { _, _ -> }
         return result?.first
     }

@@ -52,6 +52,16 @@ data class JobLogEntity(
     val isError: Boolean
 )
 
+@Entity(tableName = "vault_items")
+data class VaultItemEntity(
+    @PrimaryKey val id: String,
+    val filename: String,
+    val mimeType: String,
+    val sizeBytes: Long,
+    val localEncryptedPath: String,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
 @Dao
 interface TransferDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -108,9 +118,19 @@ interface TransferDao {
 
     @Query("DELETE FROM transfer_jobs")
     suspend fun clearHistory()
+
+    // Vault
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertVaultItem(item: VaultItemEntity)
+
+    @Query("SELECT * FROM vault_items ORDER BY timestamp DESC")
+    suspend fun getAllVaultItems(): List<VaultItemEntity>
+
+    @Query("DELETE FROM vault_items WHERE id = :id")
+    suspend fun deleteVaultItem(id: String)
 }
 
-@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class, TransferJobEntity::class, JobLogEntity::class], version = 7, exportSchema = false)
+@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class, TransferJobEntity::class, JobLogEntity::class, VaultItemEntity::class], version = 8, exportSchema = false)
 abstract class TransferDatabase : RoomDatabase() {
     abstract fun transferDao(): TransferDao
 
