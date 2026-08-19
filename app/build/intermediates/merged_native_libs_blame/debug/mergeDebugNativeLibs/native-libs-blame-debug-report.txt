@@ -1,0 +1,4 @@
+lib/arm64-v8a/libmlkitcommonpipeline.so->com.google.mlkit:vision-internal-vkp:18.2.3
+lib/armeabi-v7a/libmlkitcommonpipeline.so->com.google.mlkit:vision-internal-vkp:18.2.3
+lib/x86/libmlkitcommonpipeline.so->com.google.mlkit:vision-internal-vkp:18.2.3
+lib/x86_64/libmlkitcommonpipeline.so->com.google.mlkit:vision-internal-vkp:18.2.3

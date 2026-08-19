@@ -88,8 +88,8 @@ interface TransferDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertRemoteMetadata(items: List<RemoteMetadata>)
 
-    @Query("SELECT * FROM remote_metadata WHERE accountId = :accountId AND filename = :filename AND sizeBytes = :size AND creationTime = :time LIMIT 1")
-    suspend fun findRemoteMatch(accountId: String, filename: String, size: Long, time: String): RemoteMetadata?
+    @Query("SELECT sizeBytes FROM remote_metadata WHERE accountId = :accountId AND filename = :filename AND creationTime = :time LIMIT 1")
+    suspend fun findRemoteMatchSize(accountId: String, filename: String, time: String): Long?
 
     @Query("DELETE FROM remote_metadata WHERE accountId = :accountId")
     suspend fun clearRemoteMetadata(accountId: String)
@@ -110,7 +110,7 @@ interface TransferDao {
     @Query("SELECT * FROM job_logs WHERE jobId = :jobId ORDER BY timestamp ASC")
     suspend fun getLogsForJob(jobId: String): List<JobLogEntity>
 
-    @Query("SELECT SUM(transferredBytes) FROM transfer_jobs WHERE status = 'COMPLETED'")
+    @Query("SELECT SUM(transferredBytes) FROM transfer_jobs")
     suspend fun getTotalTransferredBytes(): Long?
 
     @Query("SELECT COUNT(*) FROM transfer_jobs")

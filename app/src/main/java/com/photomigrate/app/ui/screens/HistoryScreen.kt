@@ -142,7 +142,8 @@ fun AnalyticsHeader(totalBytes: Long, jobCount: Int) {
     val totalMb = totalBytes.toDouble() / (1024.0 * 1024.0)
     val totalGb = totalMb / 1024.0
     
-    val showInGb = totalGb >= 0.01
+    // Switch to GB only if we have at least 100MB
+    val showInGb = totalGb >= 0.1
     val displayValue = if (showInGb) totalGb else totalMb
     val unitText = if (showInGb) " GB" else " MB"
 

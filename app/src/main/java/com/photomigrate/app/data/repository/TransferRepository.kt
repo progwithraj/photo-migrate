@@ -433,13 +433,14 @@ class TransferRepository(private val context: Context) {
         val startTime = System.currentTimeMillis()
         
         // Smart Duplicate Detection Step 0: Check metadata before downloading
-        if (isSmartDuplicate(destinationAccount.id, item)) {
+        val duplicateSize = findSmartDuplicateSize(destinationAccount.id, item)
+        if (duplicateSize != null) {
             addLog(jobId, "SMART SKIP: '${item.filename}' already exists in destination (Matched via Metadata).")
             item.status = SyncStatus.COMPLETED
             updateJobSync(jobId) { 
                 it.copy(
                     completedItems = it.completedItems + 1,
-                    transferredBytes = it.transferredBytes + item.sizeBytes
+                    transferredBytes = it.transferredBytes + duplicateSize
                 ) 
             }
             _currentJob.value?.let { onProgressUpdate(it) }
@@ -521,12 +522,19 @@ class TransferRepository(private val context: Context) {
         if (orgMode != OrganizationMode.NONE && item.mimeType.startsWith("image/")) {
             val albumName = when (orgMode) {
                 OrganizationMode.BY_DATE -> {
-                    // Extract Month Year from creationTime (e.g. 2026-08-16T... -> August 2026)
                     val rawTime = item.creationTime
-                    if (rawTime.length >= 7) {
+                    if (rawTime.length >= 7 && rawTime.contains("-")) {
                         try {
-                            val date = SimpleDateFormat("yyyy-MM", Locale.US).parse(rawTime.take(7))
-                            date?.let { SimpleDateFormat("MMMM yyyy", Locale.US).format(it) } ?: "Migrated Photos"
+                            // Safer extraction: yyyy-MM
+                            val parts = rawTime.split("-")
+                            if (parts.size >= 2) {
+                                val year = parts[0]
+                                val month = parts[1]
+                                val date = SimpleDateFormat("yyyy-MM", Locale.US).parse("$year-$month")
+                                date?.let { SimpleDateFormat("MMMM yyyy", Locale.US).format(it) } ?: "Migrated Photos"
+                            } else {
+                                "Unknown Date"
+                            }
                         } catch (e: Exception) {
                             "Unknown Date"
                         }
@@ -658,26 +666,22 @@ class TransferRepository(private val context: Context) {
 
     /**
      * Smart Duplicate Detection: Check if a similar file exists in destination account.
+     * Returns the size of the matched item if found, else null.
      */
-    suspend fun isSmartDuplicate(accountId: String, item: MediaItem): Boolean {
-        // 1. Exact match by ID (if we moved it ourselves before)
+    suspend fun findSmartDuplicateSize(accountId: String, item: MediaItem): Long? {
         try {
-            val transferredIds = db.transferDao().getTransferredMediaIds(accountId)
-            if (item.id in transferredIds) return true
-            
-            // 2. Metadata match: Filename + Size + CreationTime
-            val match = db.transferDao().findRemoteMatch(
+            // 1. Check metadata match: Filename + CreationTime
+            return db.transferDao().findRemoteMatchSize(
                 accountId = accountId,
                 filename = item.filename,
-                size = item.sizeBytes,
                 time = item.creationTime
             )
-            return match != null
         } catch (e: Exception) {
-            Log.e("TransferRepository", "DB Error in isSmartDuplicate: ${e.message}")
-            return false
+            Log.e("TransferRepository", "DB Error in findSmartDuplicateSize: ${e.message}")
+            return null
         }
     }
+
 
     /**
      * Index destination account media to create a lookup for Smart Duplicate Detection.

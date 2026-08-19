@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,7 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.photomigrate.app.data.auth.OAuthManager
@@ -30,6 +34,10 @@ import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.MediaItemGridCard
 import com.photomigrate.app.ui.components.PremiumLoader
 import kotlinx.coroutines.launch
+
+enum class SortBy {
+    NEWEST, OLDEST, SIZE_DESC, SIZE_ASC, NAME_AZ, NAME_ZA
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,15 +58,36 @@ fun MediaPickerScreen(
     val tabTitles = listOf("Images", "Videos")
 
     var showQualityDialog by remember { mutableStateOf(false) }
+    var showFilterSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    
+    var sortBy by remember { mutableStateOf(SortBy.NEWEST) }
+    var minSizeMB by remember { mutableStateOf("") }
+    var maxSizeMB by remember { mutableStateOf("") }
+
     var selectedOrgMode by remember { mutableStateOf(OrganizationMode.NONE) }
 
     val gridState = rememberLazyGridState()
 
-    val filteredMediaItems = remember(mediaItems, selectedTabIndex) {
-        if (selectedTabIndex == 0) {
+    val filteredMediaItems = remember(mediaItems, selectedTabIndex, sortBy, minSizeMB, maxSizeMB) {
+        val typeFiltered = if (selectedTabIndex == 0) {
             mediaItems.filter { it.mimeType.startsWith("image/") }
         } else {
             mediaItems.filter { it.mimeType.startsWith("video/") }
+        }
+
+        val minSize = minSizeMB.toDoubleOrNull()?.let { it * 1024 * 1024 } ?: 0.0
+        val maxSize = maxSizeMB.toDoubleOrNull()?.let { it * 1024 * 1024 } ?: Double.MAX_VALUE
+
+        val sizeFiltered = typeFiltered.filter { it.sizeBytes >= minSize && it.sizeBytes <= maxSize }
+
+        when (sortBy) {
+            SortBy.NEWEST -> sizeFiltered.sortedByDescending { it.creationTime }
+            SortBy.OLDEST -> sizeFiltered.sortedBy { it.creationTime }
+            SortBy.SIZE_DESC -> sizeFiltered.sortedByDescending { it.sizeBytes }
+            SortBy.SIZE_ASC -> sizeFiltered.sortedBy { it.sizeBytes }
+            SortBy.NAME_AZ -> sizeFiltered.sortedBy { it.filename }
+            SortBy.NAME_ZA -> sizeFiltered.sortedByDescending { it.filename }
         }
     }
 
@@ -155,6 +184,13 @@ fun MediaPickerScreen(
                         }
                     },
                     actions = {
+                        IconButton(onClick = { showFilterSheet = true }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = "Sort & Filter",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         TextButton(onClick = {
                             val currentTabIds = filteredMediaItems.map { it.id }.toSet()
                             selectedIds = if (allInTabSelected) {
@@ -359,5 +395,80 @@ fun MediaPickerScreen(
                 }
             }
         }
+    }
+
+    if (showFilterSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterSheet = false },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("Sort & Filter", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                
+                Text("Sort By", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                
+                Column {
+                    SortOptionRow("Newest First", SortBy.NEWEST, sortBy) { sortBy = it }
+                    SortOptionRow("Oldest First", SortBy.OLDEST, sortBy) { sortBy = it }
+                    SortOptionRow("Size: Largest First", SortBy.SIZE_DESC, sortBy) { sortBy = it }
+                    SortOptionRow("Size: Smallest First", SortBy.SIZE_ASC, sortBy) { sortBy = it }
+                    SortOptionRow("Name: A to Z", SortBy.NAME_AZ, sortBy) { sortBy = it }
+                    SortOptionRow("Name: Z to A", SortBy.NAME_ZA, sortBy) { sortBy = it }
+                }
+
+                HorizontalDivider()
+
+                Text("Size Filter (MB)", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = minSizeMB,
+                        onValueChange = { minSizeMB = it },
+                        label = { Text("Min MB") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = maxSizeMB,
+                        onValueChange = { maxSizeMB = it },
+                        label = { Text("Max MB") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+                }
+
+                Button(
+                    onClick = { showFilterSheet = false },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Apply")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SortOptionRow(label: String, option: SortBy, selected: SortBy, onSelect: (SortBy) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelect(option) }
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected == option, onClick = { onSelect(option) })
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(label, fontSize = 15.sp)
     }
 }
