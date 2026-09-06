@@ -1,4 +1,4 @@
-#Sun Sep 06 17:23:15 IST 2026
+#Sun Sep 06 18:04:59 IST 2026
 base.0=/Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
 base.1=/Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
 base.10=/Users/IPRIYANATH/.gemini/antigravity-ide/scratch/photo-sync-app/app/build/intermediates/dex/debug/mergeProjectDexDebug/8/classes.dex

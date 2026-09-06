@@ -21,7 +21,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -34,6 +38,7 @@ import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.MediaItemGridCard
 import com.photomigrate.app.ui.components.PremiumLoader
+import com.photomigrate.app.ui.theme.CredNeonPink
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,59 +99,125 @@ fun MediaPickerScreen(
     val allInTabSelected = filteredMediaItems.isNotEmpty() && currentTabSelectedCount == filteredMediaItems.size
 
     if (showQualityDialog) {
-        AlertDialog(
+        var isStorageSaverSelected by remember { mutableStateOf(false) }
+
+        ModalBottomSheet(
             onDismissRequest = { showQualityDialog = false },
-            title = { Text("Transfer Options", fontWeight = FontWeight.Bold) },
-            text = { 
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Select how you want to move your photos:")
-                    
-                    if (aiOrgEnabled) {
-                        Text("AI Organization", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
-                        
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = OrganizationMode.NONE }) {
-                            RadioButton(selected = selectedOrgMode == OrganizationMode.NONE, onClick = { selectedOrgMode = OrganizationMode.NONE })
-                            Text("Original Library (No Sorting)", fontSize = 14.sp)
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = OrganizationMode.BY_DATE }) {
-                            RadioButton(selected = selectedOrgMode == OrganizationMode.BY_DATE, onClick = { selectedOrgMode = OrganizationMode.BY_DATE })
-                            Text("Group by Date (e.g. Aug 2026)", fontSize = 14.sp)
-                        }
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { selectedOrgMode = OrganizationMode.BY_CONTENT }) {
-                            RadioButton(selected = selectedOrgMode == OrganizationMode.BY_CONTENT, onClick = { selectedOrgMode = OrganizationMode.BY_CONTENT })
-                            Text("Smart AI Grouping (Nature, Pets...)", fontSize = 14.sp)
-                        }
-                        
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    }
-                    
-                    Text("Quality", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
-                    Text("Choose whether to compress images to save storage.", fontSize = 14.sp)
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showQualityDialog = false
-                        val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
-                        onStartTransfer(selectedMode, true, selectedOrgMode, itemsToTransfer)
-                    }
-                ) {
-                    Text("Storage Saver")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showQualityDialog = false
-                        val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
-                        onStartTransfer(selectedMode, false, selectedOrgMode, itemsToTransfer)
-                    }
-                ) {
-                    Text("Original Quality")
-                }
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color(0xFF0D0E19),
+            dragHandle = {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 12.dp, bottom = 8.dp)
+                        .width(40.dp)
+                        .height(4.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF2C2E42))
+                )
             }
-        )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Transfer Options",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 20.sp,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Choose how you want to organize and save your photos.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF9394A5)
+                        )
+                    }
+                    IconButton(onClick = { showQualityDialog = false }) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                    }
+                }
+
+                // Section: Organization
+                if (aiOrgEnabled) {
+                    Text(
+                        text = "Organization",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color.White
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OptionCard(
+                            title = "Original Library",
+                            subtitle = "Keep the same folder structure as your source.",
+                            icon = Icons.Default.Folder,
+                            isSelected = selectedOrgMode == OrganizationMode.NONE,
+                            onClick = { selectedOrgMode = OrganizationMode.NONE }
+                        )
+                        OptionCard(
+                            title = "Group by Date",
+                            subtitle = "Organize by date (e.g. Aug 2026).",
+                            icon = Icons.Default.CalendarToday,
+                            isSelected = selectedOrgMode == OrganizationMode.BY_DATE,
+                            onClick = { selectedOrgMode = OrganizationMode.BY_DATE }
+                        )
+                        OptionCard(
+                            title = "Smart AI Grouping",
+                            subtitle = "Group by people, places, events and more.",
+                            icon = Icons.Default.AutoAwesome,
+                            isSelected = selectedOrgMode == OrganizationMode.BY_CONTENT,
+                            onClick = { selectedOrgMode = OrganizationMode.BY_CONTENT }
+                        )
+                    }
+                }
+
+                // Section: Quality
+                Text(
+                    text = "Quality",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color.White
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OptionCard(
+                        title = "Original Quality",
+                        subtitle = "Keep full resolution (larger size).",
+                        icon = Icons.Default.RadioButtonChecked,
+                        isSelected = !isStorageSaverSelected,
+                        onClick = { isStorageSaverSelected = false }
+                    )
+                    OptionCard(
+                        title = "Storage Saver",
+                        subtitle = "Compress to save space.",
+                        icon = Icons.Default.Speed,
+                        isSelected = isStorageSaverSelected,
+                        onClick = { isStorageSaverSelected = true }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                com.photomigrate.app.ui.components.CredButton(
+                    text = "Continue",
+                    onClick = {
+                        showQualityDialog = false
+                        val itemsToTransfer = mediaItems.filter { it.id in selectedIds }
+                        onStartTransfer(selectedMode, isStorageSaverSelected, selectedOrgMode, itemsToTransfer)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 
     Scaffold(
@@ -456,6 +527,77 @@ fun MediaPickerScreen(
                     Text("Apply")
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun OptionCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val borderColor = if (isSelected) CredNeonPink else Color(0xFF23253B)
+    val bgColor = if (isSelected) Color(0xFF1E1022) else Color(0xFF131422)
+
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = bgColor,
+        border = BorderStroke(1.dp, borderColor),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Surface(
+                    color = if (isSelected) CredNeonPink.copy(alpha = 0.2f) else Color(0xFF1C1E30),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = if (isSelected) CredNeonPink else Color(0xFF9394A5),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
+                    Text(
+                        text = title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color.White
+                    )
+                    Text(
+                        text = subtitle,
+                        fontSize = 11.sp,
+                        color = Color(0xFF9394A5)
+                    )
+                }
+            }
+
+            RadioButton(
+                selected = isSelected,
+                onClick = onClick,
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = CredNeonPink,
+                    unselectedColor = Color(0xFF4A4B60)
+                )
+            )
         }
     }
 }

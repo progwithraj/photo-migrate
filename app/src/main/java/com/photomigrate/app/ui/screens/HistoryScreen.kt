@@ -7,18 +7,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,7 +28,9 @@ import com.photomigrate.app.data.model.JobStatus
 import com.photomigrate.app.data.model.TransferJob
 import com.photomigrate.app.data.model.TransferLog
 import com.photomigrate.app.ui.components.GlassCard
+import com.photomigrate.app.ui.theme.CredNeonPink
 import com.photomigrate.app.ui.theme.SuccessGreen
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -110,43 +114,187 @@ fun HistoryScreen(
         }
     }
 
-    // Logs Detail Overlay
+    // CRED-Style Transfer Details Modal Sheet
     if (selectedJobId != null) {
-        AlertDialog(
+        val selectedJob = history.find { it.id == selectedJobId }
+        
+        ModalBottomSheet(
             onDismissRequest = { selectedJobId = null },
-            title = { Text("Job Details", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(modifier = Modifier.height(400.dp)) {
-                    val job = history.find { it.id == selectedJobId }
-                    if (job != null) {
-                        Text("Status: ${job.status}", fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                        Text("Moved: ${job.completedItems} / ${job.totalItems}", fontSize = 14.sp)
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = Color(0xFF0D0E19),
+            dragHandle = {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 12.dp, bottom = 8.dp)
+                        .width(40.dp)
+                        .height(4.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF2C2E42))
+                )
+            }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Transfer Details",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 20.sp,
+                        color = Color.White
+                    )
+                    IconButton(onClick = { selectedJobId = null }) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
                     }
+                }
+
+                if (selectedJob != null) {
+                    val statusColor = when (selectedJob.status) {
+                        JobStatus.COMPLETED -> SuccessGreen
+                        JobStatus.FAILED -> MaterialTheme.colorScheme.error
+                        else -> CredNeonPink
+                    }
+
+                    // Status Chip & Date
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            color = statusColor.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(
+                                text = selectedJob.status.name,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = statusColor
+                            )
+                        }
+
+                        val date = SimpleDateFormat("Sept dd, HH:mm", Locale.US).format(Date(selectedJob.startTime))
+                        Text(date, fontSize = 13.sp, color = Color(0xFF9394A5))
+                    }
+
+                    // Item & Size Summary
+                    val sizeMb = selectedJob.transferredBytes / (1024L * 1024L)
+                    Text(
+                        text = "${selectedJob.completedItems} / ${selectedJob.totalItems} items (${sizeMb} MB Migrated)",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 18.sp,
+                        color = Color.White
+                    )
+
+                    HorizontalDivider(color = Color(0xFF23253B))
+
+                    // Account Nodes Connector
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF131422), RoundedCornerShape(16.dp))
+                            .border(1.dp, Color(0xFF23253B), RoundedCornerShape(16.dp))
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Surface(
+                                color = CredNeonPink.copy(alpha = 0.2f),
+                                shape = CircleShape,
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text("From", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CredNeonPink)
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = selectedJob.sourceAccountId.substringBefore("@"),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = CredNeonPink,
+                            modifier = Modifier.size(24.dp)
+                        )
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                shape = CircleShape,
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text("To", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = selectedJob.destinationAccountId.substringBefore("@"),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    // Transfer Summary Grid
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        DetailMetric("Mode", selectedJob.mode.name)
+                        DetailMetric("Quality", if (selectedJob.isCompressionEnabled) "Storage Saver" else "Original")
+                        DetailMetric("AI Org", selectedJob.orgMode.name)
+                    }
+
+                    // Monospaced Activity Logs
+                    Text("Technical Logs", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     
                     LazyColumn(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
-                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .background(Color(0xFF080910), RoundedCornerShape(12.dp))
+                            .border(1.dp, Color(0xFF23253B), RoundedCornerShape(12.dp))
+                            .padding(10.dp)
                     ) {
                         items(selectedJobLogs) { log ->
                             Text(
                                 text = "> ${log.message}",
                                 fontSize = 11.sp,
-                                color = if (log.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                                fontFamily = FontFamily.Monospace,
+                                color = if (log.isError) MaterialTheme.colorScheme.error else Color(0xFF9394A5),
                                 modifier = Modifier.padding(vertical = 2.dp)
                             )
                         }
                     }
                 }
-            },
-            confirmButton = {
-                TextButton(onClick = { selectedJobId = null }) {
-                    Text("Close")
-                }
             }
-        )
+        }
+    }
+}
+
+@Composable
+fun DetailMetric(label: String, value: String) {
+    Column {
+        Text(label, fontSize = 11.sp, color = Color(0xFF9394A5))
+        Text(value, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
     }
 }
 
@@ -155,7 +303,6 @@ fun AnalyticsHeader(totalBytes: Long, jobCount: Int) {
     val totalMb = totalBytes.toDouble() / (1024.0 * 1024.0)
     val totalGb = totalMb / 1024.0
     
-    // Switch to GB only if we have at least 100MB
     val showInGb = totalGb >= 0.1
     val displayValue = if (showInGb) totalGb else totalMb
     val unitText = if (showInGb) " GB" else " MB"
@@ -167,37 +314,38 @@ fun AnalyticsHeader(totalBytes: Long, jobCount: Int) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Lifetime Stats", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
+                Text("Lifetime Stats", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = CredNeonPink)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = String.format(Locale.US, "%.2f", displayValue),
-                        fontSize = 32.sp,
+                        text = String.format(Locale.US, "%.1f", displayValue),
+                        fontSize = 36.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color.White
                     )
                     Text(
                         text = unitText,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color(0xFF9394A5),
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
                 }
-                Text("Total Data Migrated", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Total Data Migrated", fontSize = 12.sp, color = Color(0xFF9394A5))
             }
             
             Column(horizontalAlignment = Alignment.End) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
+                Surface(
+                    color = CredNeonPink.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(Icons.Default.Analytics, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Analytics, contentDescription = null, tint = CredNeonPink)
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("$jobCount Jobs", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text("$jobCount Jobs", fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
     }
@@ -209,15 +357,15 @@ fun HistoryJobCard(job: TransferJob, onClick: () -> Unit) {
     val statusColor = when (job.status) {
         JobStatus.COMPLETED -> SuccessGreen
         JobStatus.FAILED -> MaterialTheme.colorScheme.error
-        else -> MaterialTheme.colorScheme.primary
+        else -> CredNeonPink
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)),
-        border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF131422)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF23253B))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -230,15 +378,15 @@ fun HistoryJobCard(job: TransferJob, onClick: () -> Unit) {
                         imageVector = if (job.mode == com.photomigrate.app.data.model.TransferMode.MOVE) Icons.Default.MoveUp else Icons.Default.ContentCopy,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = Color(0xFF9394A5)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(date, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(date, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
                 }
                 
                 Surface(
-                    color = statusColor.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(12.dp)
+                    color = statusColor.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
                     Text(
                         text = job.status.name,
@@ -254,12 +402,12 @@ fun HistoryJobCard(job: TransferJob, onClick: () -> Unit) {
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
-                    Text("${job.completedItems} / ${job.totalItems} Items", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("${job.completedItems} / ${job.totalItems} Items", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
                     val sizeMb = job.transferredBytes / (1024L * 1024L)
-                    Text("$sizeMb MB Migrated", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("$sizeMb MB Migrated", fontSize = 12.sp, color = Color(0xFF9394A5))
                 }
                 
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF9394A5))
             }
         }
     }
@@ -277,10 +425,10 @@ fun EmptyHistoryState() {
             imageVector = Icons.Default.History,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            tint = Color(0xFF23253B)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text("No History Yet", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text("Start a migration to see it here.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+        Text("No History Yet", fontWeight = FontWeight.Bold, color = Color.White)
+        Text("Start a migration to see it here.", fontSize = 14.sp, color = Color(0xFF9394A5))
     }
 }

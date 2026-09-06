@@ -120,30 +120,13 @@ fun AccountScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
-                Button(
+                com.photomigrate.app.ui.components.CredButton(
+                    text = "Select Photos",
                     onClick = onProceedToPicker,
                     enabled = isEnabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = if (isEnabled) 8.dp else 0.dp,
-                        pressedElevation = 2.dp
-                    )
-                ) {
-                    Text("Select Photos", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                    icon = Icons.AutoMirrored.Filled.ArrowForward,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     ) { padding ->
@@ -158,39 +141,57 @@ fun AccountScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                // Banner
+                // CRED-Style Hero Banner
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Migrate Securely",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         Surface(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp)
+                            color = CredNeonPink.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.size(40.dp)
                         ) {
-                            Text(
-                                "DIRECT & FREE",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.CollectionsBookmark,
+                                    contentDescription = null,
+                                    tint = CredNeonPink,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
                         }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        Text(
+                            text = "Migrate Your\nPrecious Memories",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            lineHeight = 28.sp,
+                            color = Color.White
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Move your photos between accounts without losing quality. Fast, secure and hassle-free.",
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                            color = Color(0xFF9394A5)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        com.photomigrate.app.ui.components.FeatureBadgeRow()
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        com.photomigrate.app.ui.components.CredButton(
+                            text = "+ Migrate Photos",
+                            onClick = onProceedToPicker,
+                            enabled = isEnabled,
+                            icon = Icons.AutoMirrored.Filled.ArrowForward,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Move your precious memories between accounts without losing quality. Completely free and direct.",
-                        fontSize = 13.sp,
-                        lineHeight = 19.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
 

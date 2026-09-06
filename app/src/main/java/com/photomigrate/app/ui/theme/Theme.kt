@@ -2,8 +2,13 @@ package com.photomigrate.app.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -75,6 +80,7 @@ fun PhotoMigrateTheme(
             onSurfaceVariant = Color.LightGray,
             onBackground = Color.White
         )
+
         AppTheme.DRACULA -> colorScheme.copy(
             onPrimary = Color.Black,
             background = Color(0xFF282A36),
@@ -84,6 +90,7 @@ fun PhotoMigrateTheme(
             onSurfaceVariant = Color.LightGray,
             onBackground = Color.White
         )
+
         AppTheme.SYNTHWAVE -> colorScheme.copy(
             onPrimary = Color.Black,
             background = Color(0xFF241734),
@@ -93,6 +100,7 @@ fun PhotoMigrateTheme(
             onSurfaceVariant = Color.LightGray,
             onBackground = Color.White
         )
+
         else -> colorScheme
     }
 
@@ -101,7 +109,8 @@ fun PhotoMigrateTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !effectiveDarkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
+                !effectiveDarkTheme
         }
     }
 
