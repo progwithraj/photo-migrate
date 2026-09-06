@@ -4,7 +4,7 @@
             "outputFile": "com.photomigrate.app-mergeDebugResources-1:/values-v23/values-v23.xml",
             "map": [
                 {
-                    "source": "/Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/7badfd02860b2d02377f6cb48fdccf29/transformed/work-runtime-2.9.0/res/values-v23/values-v23.xml",
+                    "source": "/Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/43a6c17f36b5b030ae1903ba23f23654/transformed/work-runtime-2.9.0/res/values-v23/values-v23.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "/Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/550977f1278b52933d5c3e7b64d76dc9/transformed/appcompat-1.6.1/res/values-v23/values-v23.xml",
+                    "source": "/Users/IPRIYANATH/.gradle/caches/9.5.0/transforms/5b2f7932f9adc028b1ffe13255c295d6/transformed/appcompat-1.6.1/res/values-v23/values-v23.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,20,34,35,36,39,43,44,45,46",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4",

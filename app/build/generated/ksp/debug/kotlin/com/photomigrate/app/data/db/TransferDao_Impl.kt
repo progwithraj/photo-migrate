@@ -37,6 +37,8 @@ public class TransferDao_Impl(
 
   private val __insertAdapterOfVaultItemEntity: EntityInsertAdapter<VaultItemEntity>
 
+  private val __insertAdapterOfPendingCleanup: EntityInsertAdapter<PendingCleanup>
+
   private val __updateAdapterOfTransferJobEntity: EntityDeleteOrUpdateAdapter<TransferJobEntity>
   init {
     this.__db = __db
@@ -69,32 +71,37 @@ public class TransferDao_Impl(
       }
     }
     this.__insertAdapterOfTransferJobEntity = object : EntityInsertAdapter<TransferJobEntity>() {
-      protected override fun createQuery(): String = "INSERT OR REPLACE INTO `transfer_jobs` (`id`,`sourceAccountId`,`destinationAccountId`,`mode`,`orgMode`,`batchAlbumName`,`totalItems`,`completedItems`,`failedItems`,`totalBytes`,`transferredBytes`,`status`,`startTime`,`endTime`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+      protected override fun createQuery(): String = "INSERT OR REPLACE INTO `transfer_jobs` (`id`,`sourceAccountId`,`destinationAccountId`,`destinationType`,`mode`,`orgMode`,`batchAlbumName`,`isCompressionEnabled`,`isResumed`,`totalItems`,`completedItems`,`failedItems`,`totalBytes`,`transferredBytes`,`status`,`startTime`,`endTime`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 
       protected override fun bind(statement: SQLiteStatement, entity: TransferJobEntity) {
         statement.bindText(1, entity.id)
         statement.bindText(2, entity.sourceAccountId)
         statement.bindText(3, entity.destinationAccountId)
-        statement.bindText(4, entity.mode)
-        statement.bindText(5, entity.orgMode)
+        statement.bindText(4, entity.destinationType)
+        statement.bindText(5, entity.mode)
+        statement.bindText(6, entity.orgMode)
         val _tmpBatchAlbumName: String? = entity.batchAlbumName
         if (_tmpBatchAlbumName == null) {
-          statement.bindNull(6)
+          statement.bindNull(7)
         } else {
-          statement.bindText(6, _tmpBatchAlbumName)
+          statement.bindText(7, _tmpBatchAlbumName)
         }
-        statement.bindLong(7, entity.totalItems.toLong())
-        statement.bindLong(8, entity.completedItems.toLong())
-        statement.bindLong(9, entity.failedItems.toLong())
-        statement.bindLong(10, entity.totalBytes)
-        statement.bindLong(11, entity.transferredBytes)
-        statement.bindText(12, entity.status)
-        statement.bindLong(13, entity.startTime)
+        val _tmp: Int = if (entity.isCompressionEnabled) 1 else 0
+        statement.bindLong(8, _tmp.toLong())
+        val _tmp_1: Int = if (entity.isResumed) 1 else 0
+        statement.bindLong(9, _tmp_1.toLong())
+        statement.bindLong(10, entity.totalItems.toLong())
+        statement.bindLong(11, entity.completedItems.toLong())
+        statement.bindLong(12, entity.failedItems.toLong())
+        statement.bindLong(13, entity.totalBytes)
+        statement.bindLong(14, entity.transferredBytes)
+        statement.bindText(15, entity.status)
+        statement.bindLong(16, entity.startTime)
         val _tmpEndTime: Long? = entity.endTime
         if (_tmpEndTime == null) {
-          statement.bindNull(14)
+          statement.bindNull(17)
         } else {
-          statement.bindLong(14, _tmpEndTime)
+          statement.bindLong(17, _tmpEndTime)
         }
       }
     }
@@ -122,35 +129,56 @@ public class TransferDao_Impl(
         statement.bindLong(6, entity.timestamp)
       }
     }
+    this.__insertAdapterOfPendingCleanup = object : EntityInsertAdapter<PendingCleanup>() {
+      protected override fun createQuery(): String = "INSERT OR REPLACE INTO `pending_cleanups` (`mediaId`,`accountId`,`filename`,`errorReason`,`timestamp`) VALUES (?,?,?,?,?)"
+
+      protected override fun bind(statement: SQLiteStatement, entity: PendingCleanup) {
+        statement.bindText(1, entity.mediaId)
+        statement.bindText(2, entity.accountId)
+        statement.bindText(3, entity.filename)
+        val _tmpErrorReason: String? = entity.errorReason
+        if (_tmpErrorReason == null) {
+          statement.bindNull(4)
+        } else {
+          statement.bindText(4, _tmpErrorReason)
+        }
+        statement.bindLong(5, entity.timestamp)
+      }
+    }
     this.__updateAdapterOfTransferJobEntity = object : EntityDeleteOrUpdateAdapter<TransferJobEntity>() {
-      protected override fun createQuery(): String = "UPDATE OR ABORT `transfer_jobs` SET `id` = ?,`sourceAccountId` = ?,`destinationAccountId` = ?,`mode` = ?,`orgMode` = ?,`batchAlbumName` = ?,`totalItems` = ?,`completedItems` = ?,`failedItems` = ?,`totalBytes` = ?,`transferredBytes` = ?,`status` = ?,`startTime` = ?,`endTime` = ? WHERE `id` = ?"
+      protected override fun createQuery(): String = "UPDATE OR ABORT `transfer_jobs` SET `id` = ?,`sourceAccountId` = ?,`destinationAccountId` = ?,`destinationType` = ?,`mode` = ?,`orgMode` = ?,`batchAlbumName` = ?,`isCompressionEnabled` = ?,`isResumed` = ?,`totalItems` = ?,`completedItems` = ?,`failedItems` = ?,`totalBytes` = ?,`transferredBytes` = ?,`status` = ?,`startTime` = ?,`endTime` = ? WHERE `id` = ?"
 
       protected override fun bind(statement: SQLiteStatement, entity: TransferJobEntity) {
         statement.bindText(1, entity.id)
         statement.bindText(2, entity.sourceAccountId)
         statement.bindText(3, entity.destinationAccountId)
-        statement.bindText(4, entity.mode)
-        statement.bindText(5, entity.orgMode)
+        statement.bindText(4, entity.destinationType)
+        statement.bindText(5, entity.mode)
+        statement.bindText(6, entity.orgMode)
         val _tmpBatchAlbumName: String? = entity.batchAlbumName
         if (_tmpBatchAlbumName == null) {
-          statement.bindNull(6)
+          statement.bindNull(7)
         } else {
-          statement.bindText(6, _tmpBatchAlbumName)
+          statement.bindText(7, _tmpBatchAlbumName)
         }
-        statement.bindLong(7, entity.totalItems.toLong())
-        statement.bindLong(8, entity.completedItems.toLong())
-        statement.bindLong(9, entity.failedItems.toLong())
-        statement.bindLong(10, entity.totalBytes)
-        statement.bindLong(11, entity.transferredBytes)
-        statement.bindText(12, entity.status)
-        statement.bindLong(13, entity.startTime)
+        val _tmp: Int = if (entity.isCompressionEnabled) 1 else 0
+        statement.bindLong(8, _tmp.toLong())
+        val _tmp_1: Int = if (entity.isResumed) 1 else 0
+        statement.bindLong(9, _tmp_1.toLong())
+        statement.bindLong(10, entity.totalItems.toLong())
+        statement.bindLong(11, entity.completedItems.toLong())
+        statement.bindLong(12, entity.failedItems.toLong())
+        statement.bindLong(13, entity.totalBytes)
+        statement.bindLong(14, entity.transferredBytes)
+        statement.bindText(15, entity.status)
+        statement.bindLong(16, entity.startTime)
         val _tmpEndTime: Long? = entity.endTime
         if (_tmpEndTime == null) {
-          statement.bindNull(14)
+          statement.bindNull(17)
         } else {
-          statement.bindLong(14, _tmpEndTime)
+          statement.bindLong(17, _tmpEndTime)
         }
-        statement.bindText(15, entity.id)
+        statement.bindText(18, entity.id)
       }
     }
   }
@@ -177,6 +205,10 @@ public class TransferDao_Impl(
 
   public override suspend fun insertVaultItem(item: VaultItemEntity): Unit = performSuspending(__db, false, true) { _connection ->
     __insertAdapterOfVaultItemEntity.insert(_connection, item)
+  }
+
+  public override suspend fun insertPendingCleanup(item: PendingCleanup): Unit = performSuspending(__db, false, true) { _connection ->
+    __insertAdapterOfPendingCleanup.insert(_connection, item)
   }
 
   public override suspend fun updateJob(job: TransferJobEntity): Unit = performSuspending(__db, false, true) { _connection ->
@@ -297,9 +329,12 @@ public class TransferDao_Impl(
         val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
         val _columnIndexOfSourceAccountId: Int = getColumnIndexOrThrow(_stmt, "sourceAccountId")
         val _columnIndexOfDestinationAccountId: Int = getColumnIndexOrThrow(_stmt, "destinationAccountId")
+        val _columnIndexOfDestinationType: Int = getColumnIndexOrThrow(_stmt, "destinationType")
         val _columnIndexOfMode: Int = getColumnIndexOrThrow(_stmt, "mode")
         val _columnIndexOfOrgMode: Int = getColumnIndexOrThrow(_stmt, "orgMode")
         val _columnIndexOfBatchAlbumName: Int = getColumnIndexOrThrow(_stmt, "batchAlbumName")
+        val _columnIndexOfIsCompressionEnabled: Int = getColumnIndexOrThrow(_stmt, "isCompressionEnabled")
+        val _columnIndexOfIsResumed: Int = getColumnIndexOrThrow(_stmt, "isResumed")
         val _columnIndexOfTotalItems: Int = getColumnIndexOrThrow(_stmt, "totalItems")
         val _columnIndexOfCompletedItems: Int = getColumnIndexOrThrow(_stmt, "completedItems")
         val _columnIndexOfFailedItems: Int = getColumnIndexOrThrow(_stmt, "failedItems")
@@ -317,6 +352,8 @@ public class TransferDao_Impl(
           _tmpSourceAccountId = _stmt.getText(_columnIndexOfSourceAccountId)
           val _tmpDestinationAccountId: String
           _tmpDestinationAccountId = _stmt.getText(_columnIndexOfDestinationAccountId)
+          val _tmpDestinationType: String
+          _tmpDestinationType = _stmt.getText(_columnIndexOfDestinationType)
           val _tmpMode: String
           _tmpMode = _stmt.getText(_columnIndexOfMode)
           val _tmpOrgMode: String
@@ -327,6 +364,14 @@ public class TransferDao_Impl(
           } else {
             _tmpBatchAlbumName = _stmt.getText(_columnIndexOfBatchAlbumName)
           }
+          val _tmpIsCompressionEnabled: Boolean
+          val _tmp: Int
+          _tmp = _stmt.getLong(_columnIndexOfIsCompressionEnabled).toInt()
+          _tmpIsCompressionEnabled = _tmp != 0
+          val _tmpIsResumed: Boolean
+          val _tmp_1: Int
+          _tmp_1 = _stmt.getLong(_columnIndexOfIsResumed).toInt()
+          _tmpIsResumed = _tmp_1 != 0
           val _tmpTotalItems: Int
           _tmpTotalItems = _stmt.getLong(_columnIndexOfTotalItems).toInt()
           val _tmpCompletedItems: Int
@@ -347,7 +392,7 @@ public class TransferDao_Impl(
           } else {
             _tmpEndTime = _stmt.getLong(_columnIndexOfEndTime)
           }
-          _item = TransferJobEntity(_tmpId,_tmpSourceAccountId,_tmpDestinationAccountId,_tmpMode,_tmpOrgMode,_tmpBatchAlbumName,_tmpTotalItems,_tmpCompletedItems,_tmpFailedItems,_tmpTotalBytes,_tmpTransferredBytes,_tmpStatus,_tmpStartTime,_tmpEndTime)
+          _item = TransferJobEntity(_tmpId,_tmpSourceAccountId,_tmpDestinationAccountId,_tmpDestinationType,_tmpMode,_tmpOrgMode,_tmpBatchAlbumName,_tmpIsCompressionEnabled,_tmpIsResumed,_tmpTotalItems,_tmpCompletedItems,_tmpFailedItems,_tmpTotalBytes,_tmpTransferredBytes,_tmpStatus,_tmpStartTime,_tmpEndTime)
           _result.add(_item)
         }
         _result
@@ -438,6 +483,170 @@ public class TransferDao_Impl(
     }
   }
 
+  public override suspend fun getLastIncompleteJob(): TransferJobEntity? {
+    val _sql: String = "SELECT * FROM transfer_jobs WHERE status NOT IN ('COMPLETED', 'CANCELLED') ORDER BY startTime DESC LIMIT 1"
+    return performSuspending(__db, true, false) { _connection ->
+      val _stmt: SQLiteStatement = _connection.prepare(_sql)
+      try {
+        val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
+        val _columnIndexOfSourceAccountId: Int = getColumnIndexOrThrow(_stmt, "sourceAccountId")
+        val _columnIndexOfDestinationAccountId: Int = getColumnIndexOrThrow(_stmt, "destinationAccountId")
+        val _columnIndexOfDestinationType: Int = getColumnIndexOrThrow(_stmt, "destinationType")
+        val _columnIndexOfMode: Int = getColumnIndexOrThrow(_stmt, "mode")
+        val _columnIndexOfOrgMode: Int = getColumnIndexOrThrow(_stmt, "orgMode")
+        val _columnIndexOfBatchAlbumName: Int = getColumnIndexOrThrow(_stmt, "batchAlbumName")
+        val _columnIndexOfIsCompressionEnabled: Int = getColumnIndexOrThrow(_stmt, "isCompressionEnabled")
+        val _columnIndexOfIsResumed: Int = getColumnIndexOrThrow(_stmt, "isResumed")
+        val _columnIndexOfTotalItems: Int = getColumnIndexOrThrow(_stmt, "totalItems")
+        val _columnIndexOfCompletedItems: Int = getColumnIndexOrThrow(_stmt, "completedItems")
+        val _columnIndexOfFailedItems: Int = getColumnIndexOrThrow(_stmt, "failedItems")
+        val _columnIndexOfTotalBytes: Int = getColumnIndexOrThrow(_stmt, "totalBytes")
+        val _columnIndexOfTransferredBytes: Int = getColumnIndexOrThrow(_stmt, "transferredBytes")
+        val _columnIndexOfStatus: Int = getColumnIndexOrThrow(_stmt, "status")
+        val _columnIndexOfStartTime: Int = getColumnIndexOrThrow(_stmt, "startTime")
+        val _columnIndexOfEndTime: Int = getColumnIndexOrThrow(_stmt, "endTime")
+        val _result: TransferJobEntity?
+        if (_stmt.step()) {
+          val _tmpId: String
+          _tmpId = _stmt.getText(_columnIndexOfId)
+          val _tmpSourceAccountId: String
+          _tmpSourceAccountId = _stmt.getText(_columnIndexOfSourceAccountId)
+          val _tmpDestinationAccountId: String
+          _tmpDestinationAccountId = _stmt.getText(_columnIndexOfDestinationAccountId)
+          val _tmpDestinationType: String
+          _tmpDestinationType = _stmt.getText(_columnIndexOfDestinationType)
+          val _tmpMode: String
+          _tmpMode = _stmt.getText(_columnIndexOfMode)
+          val _tmpOrgMode: String
+          _tmpOrgMode = _stmt.getText(_columnIndexOfOrgMode)
+          val _tmpBatchAlbumName: String?
+          if (_stmt.isNull(_columnIndexOfBatchAlbumName)) {
+            _tmpBatchAlbumName = null
+          } else {
+            _tmpBatchAlbumName = _stmt.getText(_columnIndexOfBatchAlbumName)
+          }
+          val _tmpIsCompressionEnabled: Boolean
+          val _tmp: Int
+          _tmp = _stmt.getLong(_columnIndexOfIsCompressionEnabled).toInt()
+          _tmpIsCompressionEnabled = _tmp != 0
+          val _tmpIsResumed: Boolean
+          val _tmp_1: Int
+          _tmp_1 = _stmt.getLong(_columnIndexOfIsResumed).toInt()
+          _tmpIsResumed = _tmp_1 != 0
+          val _tmpTotalItems: Int
+          _tmpTotalItems = _stmt.getLong(_columnIndexOfTotalItems).toInt()
+          val _tmpCompletedItems: Int
+          _tmpCompletedItems = _stmt.getLong(_columnIndexOfCompletedItems).toInt()
+          val _tmpFailedItems: Int
+          _tmpFailedItems = _stmt.getLong(_columnIndexOfFailedItems).toInt()
+          val _tmpTotalBytes: Long
+          _tmpTotalBytes = _stmt.getLong(_columnIndexOfTotalBytes)
+          val _tmpTransferredBytes: Long
+          _tmpTransferredBytes = _stmt.getLong(_columnIndexOfTransferredBytes)
+          val _tmpStatus: String
+          _tmpStatus = _stmt.getText(_columnIndexOfStatus)
+          val _tmpStartTime: Long
+          _tmpStartTime = _stmt.getLong(_columnIndexOfStartTime)
+          val _tmpEndTime: Long?
+          if (_stmt.isNull(_columnIndexOfEndTime)) {
+            _tmpEndTime = null
+          } else {
+            _tmpEndTime = _stmt.getLong(_columnIndexOfEndTime)
+          }
+          _result = TransferJobEntity(_tmpId,_tmpSourceAccountId,_tmpDestinationAccountId,_tmpDestinationType,_tmpMode,_tmpOrgMode,_tmpBatchAlbumName,_tmpIsCompressionEnabled,_tmpIsResumed,_tmpTotalItems,_tmpCompletedItems,_tmpFailedItems,_tmpTotalBytes,_tmpTransferredBytes,_tmpStatus,_tmpStartTime,_tmpEndTime)
+        } else {
+          _result = null
+        }
+        _result
+      } finally {
+        _stmt.close()
+      }
+    }
+  }
+
+  public override suspend fun getJobById(id: String): TransferJobEntity? {
+    val _sql: String = "SELECT * FROM transfer_jobs WHERE id = ?"
+    return performSuspending(__db, true, false) { _connection ->
+      val _stmt: SQLiteStatement = _connection.prepare(_sql)
+      try {
+        var _argIndex: Int = 1
+        _stmt.bindText(_argIndex, id)
+        val _columnIndexOfId: Int = getColumnIndexOrThrow(_stmt, "id")
+        val _columnIndexOfSourceAccountId: Int = getColumnIndexOrThrow(_stmt, "sourceAccountId")
+        val _columnIndexOfDestinationAccountId: Int = getColumnIndexOrThrow(_stmt, "destinationAccountId")
+        val _columnIndexOfDestinationType: Int = getColumnIndexOrThrow(_stmt, "destinationType")
+        val _columnIndexOfMode: Int = getColumnIndexOrThrow(_stmt, "mode")
+        val _columnIndexOfOrgMode: Int = getColumnIndexOrThrow(_stmt, "orgMode")
+        val _columnIndexOfBatchAlbumName: Int = getColumnIndexOrThrow(_stmt, "batchAlbumName")
+        val _columnIndexOfIsCompressionEnabled: Int = getColumnIndexOrThrow(_stmt, "isCompressionEnabled")
+        val _columnIndexOfIsResumed: Int = getColumnIndexOrThrow(_stmt, "isResumed")
+        val _columnIndexOfTotalItems: Int = getColumnIndexOrThrow(_stmt, "totalItems")
+        val _columnIndexOfCompletedItems: Int = getColumnIndexOrThrow(_stmt, "completedItems")
+        val _columnIndexOfFailedItems: Int = getColumnIndexOrThrow(_stmt, "failedItems")
+        val _columnIndexOfTotalBytes: Int = getColumnIndexOrThrow(_stmt, "totalBytes")
+        val _columnIndexOfTransferredBytes: Int = getColumnIndexOrThrow(_stmt, "transferredBytes")
+        val _columnIndexOfStatus: Int = getColumnIndexOrThrow(_stmt, "status")
+        val _columnIndexOfStartTime: Int = getColumnIndexOrThrow(_stmt, "startTime")
+        val _columnIndexOfEndTime: Int = getColumnIndexOrThrow(_stmt, "endTime")
+        val _result: TransferJobEntity?
+        if (_stmt.step()) {
+          val _tmpId: String
+          _tmpId = _stmt.getText(_columnIndexOfId)
+          val _tmpSourceAccountId: String
+          _tmpSourceAccountId = _stmt.getText(_columnIndexOfSourceAccountId)
+          val _tmpDestinationAccountId: String
+          _tmpDestinationAccountId = _stmt.getText(_columnIndexOfDestinationAccountId)
+          val _tmpDestinationType: String
+          _tmpDestinationType = _stmt.getText(_columnIndexOfDestinationType)
+          val _tmpMode: String
+          _tmpMode = _stmt.getText(_columnIndexOfMode)
+          val _tmpOrgMode: String
+          _tmpOrgMode = _stmt.getText(_columnIndexOfOrgMode)
+          val _tmpBatchAlbumName: String?
+          if (_stmt.isNull(_columnIndexOfBatchAlbumName)) {
+            _tmpBatchAlbumName = null
+          } else {
+            _tmpBatchAlbumName = _stmt.getText(_columnIndexOfBatchAlbumName)
+          }
+          val _tmpIsCompressionEnabled: Boolean
+          val _tmp: Int
+          _tmp = _stmt.getLong(_columnIndexOfIsCompressionEnabled).toInt()
+          _tmpIsCompressionEnabled = _tmp != 0
+          val _tmpIsResumed: Boolean
+          val _tmp_1: Int
+          _tmp_1 = _stmt.getLong(_columnIndexOfIsResumed).toInt()
+          _tmpIsResumed = _tmp_1 != 0
+          val _tmpTotalItems: Int
+          _tmpTotalItems = _stmt.getLong(_columnIndexOfTotalItems).toInt()
+          val _tmpCompletedItems: Int
+          _tmpCompletedItems = _stmt.getLong(_columnIndexOfCompletedItems).toInt()
+          val _tmpFailedItems: Int
+          _tmpFailedItems = _stmt.getLong(_columnIndexOfFailedItems).toInt()
+          val _tmpTotalBytes: Long
+          _tmpTotalBytes = _stmt.getLong(_columnIndexOfTotalBytes)
+          val _tmpTransferredBytes: Long
+          _tmpTransferredBytes = _stmt.getLong(_columnIndexOfTransferredBytes)
+          val _tmpStatus: String
+          _tmpStatus = _stmt.getText(_columnIndexOfStatus)
+          val _tmpStartTime: Long
+          _tmpStartTime = _stmt.getLong(_columnIndexOfStartTime)
+          val _tmpEndTime: Long?
+          if (_stmt.isNull(_columnIndexOfEndTime)) {
+            _tmpEndTime = null
+          } else {
+            _tmpEndTime = _stmt.getLong(_columnIndexOfEndTime)
+          }
+          _result = TransferJobEntity(_tmpId,_tmpSourceAccountId,_tmpDestinationAccountId,_tmpDestinationType,_tmpMode,_tmpOrgMode,_tmpBatchAlbumName,_tmpIsCompressionEnabled,_tmpIsResumed,_tmpTotalItems,_tmpCompletedItems,_tmpFailedItems,_tmpTotalBytes,_tmpTransferredBytes,_tmpStatus,_tmpStartTime,_tmpEndTime)
+        } else {
+          _result = null
+        }
+        _result
+      } finally {
+        _stmt.close()
+      }
+    }
+  }
+
   public override suspend fun getAllVaultItems(): List<VaultItemEntity> {
     val _sql: String = "SELECT * FROM vault_items ORDER BY timestamp DESC"
     return performSuspending(__db, true, false) { _connection ->
@@ -465,6 +674,43 @@ public class TransferDao_Impl(
           val _tmpTimestamp: Long
           _tmpTimestamp = _stmt.getLong(_columnIndexOfTimestamp)
           _item = VaultItemEntity(_tmpId,_tmpFilename,_tmpMimeType,_tmpSizeBytes,_tmpLocalEncryptedPath,_tmpTimestamp)
+          _result.add(_item)
+        }
+        _result
+      } finally {
+        _stmt.close()
+      }
+    }
+  }
+
+  public override suspend fun getAllPendingCleanups(): List<PendingCleanup> {
+    val _sql: String = "SELECT * FROM pending_cleanups ORDER BY timestamp DESC"
+    return performSuspending(__db, true, false) { _connection ->
+      val _stmt: SQLiteStatement = _connection.prepare(_sql)
+      try {
+        val _columnIndexOfMediaId: Int = getColumnIndexOrThrow(_stmt, "mediaId")
+        val _columnIndexOfAccountId: Int = getColumnIndexOrThrow(_stmt, "accountId")
+        val _columnIndexOfFilename: Int = getColumnIndexOrThrow(_stmt, "filename")
+        val _columnIndexOfErrorReason: Int = getColumnIndexOrThrow(_stmt, "errorReason")
+        val _columnIndexOfTimestamp: Int = getColumnIndexOrThrow(_stmt, "timestamp")
+        val _result: MutableList<PendingCleanup> = mutableListOf()
+        while (_stmt.step()) {
+          val _item: PendingCleanup
+          val _tmpMediaId: String
+          _tmpMediaId = _stmt.getText(_columnIndexOfMediaId)
+          val _tmpAccountId: String
+          _tmpAccountId = _stmt.getText(_columnIndexOfAccountId)
+          val _tmpFilename: String
+          _tmpFilename = _stmt.getText(_columnIndexOfFilename)
+          val _tmpErrorReason: String?
+          if (_stmt.isNull(_columnIndexOfErrorReason)) {
+            _tmpErrorReason = null
+          } else {
+            _tmpErrorReason = _stmt.getText(_columnIndexOfErrorReason)
+          }
+          val _tmpTimestamp: Long
+          _tmpTimestamp = _stmt.getLong(_columnIndexOfTimestamp)
+          _item = PendingCleanup(_tmpMediaId,_tmpAccountId,_tmpFilename,_tmpErrorReason,_tmpTimestamp)
           _result.add(_item)
         }
         _result
@@ -535,6 +781,22 @@ public class TransferDao_Impl(
       try {
         var _argIndex: Int = 1
         _stmt.bindText(_argIndex, id)
+        _stmt.step()
+      } finally {
+        _stmt.close()
+      }
+    }
+  }
+
+  public override suspend fun deletePendingCleanup(mediaId: String, accountId: String) {
+    val _sql: String = "DELETE FROM pending_cleanups WHERE mediaId = ? AND accountId = ?"
+    return performSuspending(__db, false, true) { _connection ->
+      val _stmt: SQLiteStatement = _connection.prepare(_sql)
+      try {
+        var _argIndex: Int = 1
+        _stmt.bindText(_argIndex, mediaId)
+        _argIndex = 2
+        _stmt.bindText(_argIndex, accountId)
         _stmt.step()
       } finally {
         _stmt.close()

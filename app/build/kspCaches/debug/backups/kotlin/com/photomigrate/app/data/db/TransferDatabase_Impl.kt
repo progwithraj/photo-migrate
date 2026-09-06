@@ -32,16 +32,17 @@ public class TransferDatabase_Impl : TransferDatabase() {
   }
 
   protected override fun createOpenDelegate(): RoomOpenDelegate {
-    val _openDelegate: RoomOpenDelegate = object : RoomOpenDelegate(8, "aba8f347e47893e22acb295a3b6a24b7", "b7d3693118a68d2a2171f6bd26a2e0a0") {
+    val _openDelegate: RoomOpenDelegate = object : RoomOpenDelegate(11, "bb70de83c31439ef9b77673b8f5e49b6", "f2c9d213c2f59512f88f53d9f6ff3510") {
       public override fun createAllTables(connection: SQLiteConnection) {
         connection.execSQL("CREATE TABLE IF NOT EXISTS `transferred_files` (`mediaId` TEXT NOT NULL, `destinationAccountId` TEXT NOT NULL, `sha256Hash` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`mediaId`, `destinationAccountId`))")
         connection.execSQL("CREATE TABLE IF NOT EXISTS `transfer_queue` (`jobId` TEXT NOT NULL, `mediaId` TEXT NOT NULL, PRIMARY KEY(`jobId`, `mediaId`))")
         connection.execSQL("CREATE TABLE IF NOT EXISTS `remote_metadata` (`accountId` TEXT NOT NULL, `filename` TEXT NOT NULL, `sizeBytes` INTEGER NOT NULL, `creationTime` TEXT NOT NULL, PRIMARY KEY(`accountId`, `filename`, `sizeBytes`, `creationTime`))")
-        connection.execSQL("CREATE TABLE IF NOT EXISTS `transfer_jobs` (`id` TEXT NOT NULL, `sourceAccountId` TEXT NOT NULL, `destinationAccountId` TEXT NOT NULL, `mode` TEXT NOT NULL, `orgMode` TEXT NOT NULL, `batchAlbumName` TEXT, `totalItems` INTEGER NOT NULL, `completedItems` INTEGER NOT NULL, `failedItems` INTEGER NOT NULL, `totalBytes` INTEGER NOT NULL, `transferredBytes` INTEGER NOT NULL, `status` TEXT NOT NULL, `startTime` INTEGER NOT NULL, `endTime` INTEGER, PRIMARY KEY(`id`))")
+        connection.execSQL("CREATE TABLE IF NOT EXISTS `transfer_jobs` (`id` TEXT NOT NULL, `sourceAccountId` TEXT NOT NULL, `destinationAccountId` TEXT NOT NULL, `destinationType` TEXT NOT NULL, `mode` TEXT NOT NULL, `orgMode` TEXT NOT NULL, `batchAlbumName` TEXT, `isCompressionEnabled` INTEGER NOT NULL, `isResumed` INTEGER NOT NULL, `totalItems` INTEGER NOT NULL, `completedItems` INTEGER NOT NULL, `failedItems` INTEGER NOT NULL, `totalBytes` INTEGER NOT NULL, `transferredBytes` INTEGER NOT NULL, `status` TEXT NOT NULL, `startTime` INTEGER NOT NULL, `endTime` INTEGER, PRIMARY KEY(`id`))")
         connection.execSQL("CREATE TABLE IF NOT EXISTS `job_logs` (`logId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `jobId` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `message` TEXT NOT NULL, `isError` INTEGER NOT NULL)")
         connection.execSQL("CREATE TABLE IF NOT EXISTS `vault_items` (`id` TEXT NOT NULL, `filename` TEXT NOT NULL, `mimeType` TEXT NOT NULL, `sizeBytes` INTEGER NOT NULL, `localEncryptedPath` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+        connection.execSQL("CREATE TABLE IF NOT EXISTS `pending_cleanups` (`mediaId` TEXT NOT NULL, `accountId` TEXT NOT NULL, `filename` TEXT NOT NULL, `errorReason` TEXT, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`mediaId`, `accountId`))")
         connection.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)")
-        connection.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'aba8f347e47893e22acb295a3b6a24b7')")
+        connection.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bb70de83c31439ef9b77673b8f5e49b6')")
       }
 
       public override fun dropAllTables(connection: SQLiteConnection) {
@@ -51,6 +52,7 @@ public class TransferDatabase_Impl : TransferDatabase() {
         connection.execSQL("DROP TABLE IF EXISTS `transfer_jobs`")
         connection.execSQL("DROP TABLE IF EXISTS `job_logs`")
         connection.execSQL("DROP TABLE IF EXISTS `vault_items`")
+        connection.execSQL("DROP TABLE IF EXISTS `pending_cleanups`")
       }
 
       public override fun onCreate(connection: SQLiteConnection) {
@@ -124,9 +126,12 @@ public class TransferDatabase_Impl : TransferDatabase() {
         _columnsTransferJobs.put("id", TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("sourceAccountId", TableInfo.Column("sourceAccountId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("destinationAccountId", TableInfo.Column("destinationAccountId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
+        _columnsTransferJobs.put("destinationType", TableInfo.Column("destinationType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("mode", TableInfo.Column("mode", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("orgMode", TableInfo.Column("orgMode", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("batchAlbumName", TableInfo.Column("batchAlbumName", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY))
+        _columnsTransferJobs.put("isCompressionEnabled", TableInfo.Column("isCompressionEnabled", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
+        _columnsTransferJobs.put("isResumed", TableInfo.Column("isResumed", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("totalItems", TableInfo.Column("totalItems", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("completedItems", TableInfo.Column("completedItems", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
         _columnsTransferJobs.put("failedItems", TableInfo.Column("failedItems", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
@@ -187,6 +192,25 @@ public class TransferDatabase_Impl : TransferDatabase() {
               | Found:
               |""".trimMargin() + _existingVaultItems)
         }
+        val _columnsPendingCleanups: MutableMap<String, TableInfo.Column> = mutableMapOf()
+        _columnsPendingCleanups.put("mediaId", TableInfo.Column("mediaId", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY))
+        _columnsPendingCleanups.put("accountId", TableInfo.Column("accountId", "TEXT", true, 2, null, TableInfo.CREATED_FROM_ENTITY))
+        _columnsPendingCleanups.put("filename", TableInfo.Column("filename", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
+        _columnsPendingCleanups.put("errorReason", TableInfo.Column("errorReason", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY))
+        _columnsPendingCleanups.put("timestamp", TableInfo.Column("timestamp", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY))
+        val _foreignKeysPendingCleanups: MutableSet<TableInfo.ForeignKey> = mutableSetOf()
+        val _indicesPendingCleanups: MutableSet<TableInfo.Index> = mutableSetOf()
+        val _infoPendingCleanups: TableInfo = TableInfo("pending_cleanups", _columnsPendingCleanups, _foreignKeysPendingCleanups, _indicesPendingCleanups)
+        val _existingPendingCleanups: TableInfo = read(connection, "pending_cleanups")
+        if (!_infoPendingCleanups.equals(_existingPendingCleanups)) {
+          return RoomOpenDelegate.ValidationResult(false, """
+              |pending_cleanups(com.photomigrate.app.data.db.PendingCleanup).
+              | Expected:
+              |""".trimMargin() + _infoPendingCleanups + """
+              |
+              | Found:
+              |""".trimMargin() + _existingPendingCleanups)
+        }
         return RoomOpenDelegate.ValidationResult(true, null)
       }
     }
@@ -196,11 +220,11 @@ public class TransferDatabase_Impl : TransferDatabase() {
   protected override fun createInvalidationTracker(): InvalidationTracker {
     val _shadowTablesMap: MutableMap<String, String> = mutableMapOf()
     val _viewTables: MutableMap<String, Set<String>> = mutableMapOf()
-    return InvalidationTracker(this, _shadowTablesMap, _viewTables, "transferred_files", "transfer_queue", "remote_metadata", "transfer_jobs", "job_logs", "vault_items")
+    return InvalidationTracker(this, _shadowTablesMap, _viewTables, "transferred_files", "transfer_queue", "remote_metadata", "transfer_jobs", "job_logs", "vault_items", "pending_cleanups")
   }
 
   public override fun clearAllTables() {
-    super.performClear(false, "transferred_files", "transfer_queue", "remote_metadata", "transfer_jobs", "job_logs", "vault_items")
+    super.performClear(false, "transferred_files", "transfer_queue", "remote_metadata", "transfer_jobs", "job_logs", "vault_items", "pending_cleanups")
   }
 
   protected override fun getRequiredTypeConverterClasses(): Map<KClass<*>, List<KClass<*>>> {
