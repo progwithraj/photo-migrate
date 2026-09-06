@@ -83,7 +83,7 @@ fun TelegramProAccountCard(
                             }
                         }
                         Text(
-                            text = account.phoneNumber,
+                            text = "Chat ID: ${account.chatId}",
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

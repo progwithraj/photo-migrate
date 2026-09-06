@@ -483,17 +483,16 @@ class TransferRepository(private val context: Context) {
         // Handle Telegram Pro MTProto Destination (Files up to 2GB)
         if (destinationType == DestinationType.TELEGRAM_MTPROTO) {
             val proAccount = oauthManager.getTelegramProAccounts().find { it.id == destinationAccountId }
-            val botAccount = oauthManager.getTelegramAccounts().find { it.id == destinationAccountId }
-            
-            val botToken = proAccount?.apiHash?.ifEmpty { null } ?: botAccount?.botToken
-            val chatId = proAccount?.phoneNumber?.ifEmpty { null } ?: botAccount?.chatId
 
-            if (botToken.isNullOrEmpty() || chatId.isNullOrEmpty()) {
+            if (proAccount == null || proAccount.botToken.isEmpty() || proAccount.chatId.isEmpty()) {
                 item.status = SyncStatus.FAILED
                 updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
                 addLog(jobId, "ERROR: Telegram Pro session credentials not found.", isError = true)
                 return@withContext
             }
+
+            val botToken = proAccount.botToken
+            val chatId = proAccount.chatId
 
             addLog(jobId, "Downloading '${item.filename}' for MTProto Pro Upload...")
             val downloadResult = apiService.downloadToTempFile(validSource, item) { _, _ -> }

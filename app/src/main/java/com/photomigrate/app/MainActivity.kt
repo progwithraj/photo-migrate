@@ -146,7 +146,8 @@ class MainActivity : FragmentActivity() {
 
                     if (showTelegramProSetup) {
                         var accountName by remember { mutableStateOf("") }
-                        var phoneOrToken by remember { mutableStateOf("") }
+                        var botToken by remember { mutableStateOf("") }
+                        var customChatId by remember { mutableStateOf("") }
                         var proError by remember { mutableStateOf<String?>(null) }
                         var isProVerifying by remember { mutableStateOf(false) }
 
@@ -160,16 +161,25 @@ class MainActivity : FragmentActivity() {
                                     OutlinedTextField(
                                         value = accountName,
                                         onValueChange = { accountName = it; proError = null },
-                                        label = { Text("Account Name (e.g. My Telegram Pro)") },
+                                        label = { Text("Vault Name (e.g. My 2GB Backup)") },
                                         singleLine = true,
                                         modifier = Modifier.fillMaxWidth()
                                     )
 
                                     OutlinedTextField(
-                                        value = phoneOrToken,
-                                        onValueChange = { phoneOrToken = it; proError = null },
-                                        label = { Text("Phone Number or Bot/API Gateway Token") },
-                                        placeholder = { Text("e.g. +1234567890 or 12345:AAF...") },
+                                        value = botToken,
+                                        onValueChange = { botToken = it; proError = null },
+                                        label = { Text("Bot Token") },
+                                        placeholder = { Text("e.g. 123456:AAF...") },
+                                        singleLine = true,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+
+                                    OutlinedTextField(
+                                        value = customChatId,
+                                        onValueChange = { customChatId = it; proError = null },
+                                        label = { Text("Channel / Chat ID (Optional)") },
+                                        placeholder = { Text("Leave blank for auto-detect, or e.g. -100123456") },
                                         singleLine = true,
                                         modifier = Modifier.fillMaxWidth()
                                     )
@@ -181,31 +191,44 @@ class MainActivity : FragmentActivity() {
                             },
                             confirmButton = {
                                 Button(
-                                    enabled = accountName.isNotBlank() && phoneOrToken.isNotBlank() && !isProVerifying,
+                                    enabled = accountName.isNotBlank() && botToken.isNotBlank() && !isProVerifying,
                                     onClick = {
                                         isProVerifying = true
                                         lifecycleScope.launch(Dispatchers.IO) {
-                                            val mtService = com.photomigrate.app.data.api.TelegramMTProtoService()
-                                            val cleanToken = phoneOrToken.trim()
+                                            val tgService = com.photomigrate.app.data.api.TelegramService()
+                                            val cleanToken = botToken.trim()
+                                            val botName = tgService.verifyBot(cleanToken)
                                             
-                                            // Validate session
-                                            val sessionHash = mtService.sendAuthCode(cleanToken)
+                                            if (botName == null) {
+                                                withContext(Dispatchers.Main) {
+                                                    isProVerifying = false
+                                                    proError = "Invalid Bot Token."
+                                                }
+                                                return@launch
+                                            }
+
+                                            val finalChatId = if (customChatId.isNotBlank()) {
+                                                customChatId.trim()
+                                            } else {
+                                                tgService.getLatestChatId(cleanToken)
+                                            }
+
                                             withContext(Dispatchers.Main) {
                                                 isProVerifying = false
-                                                if (sessionHash != null) {
+                                                if (finalChatId != null) {
                                                     oauthManager.saveTelegramProAccount(
                                                         com.photomigrate.app.data.model.TelegramProAccount(
                                                             id = "tg_pro_${System.currentTimeMillis()}",
-                                                            phoneNumber = cleanToken,
-                                                            name = accountName.trim(),
-                                                            apiHash = cleanToken
+                                                            botToken = cleanToken,
+                                                            chatId = finalChatId,
+                                                            name = accountName.trim()
                                                         )
                                                     )
                                                     Toast.makeText(this@MainActivity, "Telegram Pro Connected (2GB Limit Unlocked)!", Toast.LENGTH_SHORT).show()
                                                     showTelegramProSetup = false
                                                     recreate()
                                                 } else {
-                                                    proError = "Failed to connect to MTProto gateway."
+                                                    proError = "Could not find Chat ID. Send a message to @$botName in Telegram first, or enter your Chat/Channel ID manually above!"
                                                 }
                                             }
                                         }
