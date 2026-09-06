@@ -304,6 +304,34 @@ fun MediaItemGridCard(
             modifier = Modifier.fillMaxSize()
         )
 
+        // File Size Badge
+        val formattedSize = remember(item.sizeBytes) {
+            if (item.sizeBytes <= 0) ""
+            else {
+                val mb = item.sizeBytes.toDouble() / (1024.0 * 1024.0)
+                if (mb >= 1024) String.format(java.util.Locale.US, "%.1f GB", mb / 1024.0)
+                else if (mb >= 1.0) String.format(java.util.Locale.US, "%.1f MB", mb)
+                else String.format(java.util.Locale.US, "%.0f KB", item.sizeBytes.toDouble() / 1024.0)
+            }
+        }
+
+        if (formattedSize.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(6.dp)
+                    .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = formattedSize,
+                    color = Color.White,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
         // Overlay status badge
         if (item.isSelected) {
             Box(

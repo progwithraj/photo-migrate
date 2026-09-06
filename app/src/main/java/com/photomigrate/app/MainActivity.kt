@@ -94,14 +94,18 @@ class MainActivity : FragmentActivity() {
                                         incompleteJob = null
                                         lifecycleScope.launch {
                                             val resumed = repository.resumeJob(jobToResume)
-                                            val sourceAcc = accounts.find { it.id == resumed.sourceAccountId }
-                                            val destAcc = accounts.find { it.id == resumed.destinationAccountId }
+                                            val sourceAcc = accounts.find { it.id == resumed.sourceAccountId || it.email == resumed.sourceAccountId }
+                                            val destAcc = accounts.find { it.id == resumed.destinationAccountId || it.email == resumed.destinationAccountId }
+                                            val telegramAcc = oauthManager.getTelegramAccounts().find { it.id == resumed.destinationAccountId }
+                                            val telegramProAcc = oauthManager.getTelegramProAccounts().find { it.id == resumed.destinationAccountId }
                                             
-                                            if (sourceAcc != null && destAcc != null) {
+                                            if (sourceAcc != null && (destAcc != null || telegramAcc != null || telegramProAcc != null)) {
+                                                val destId = destAcc?.id ?: telegramAcc?.id ?: telegramProAcc!!.id
+                                                
                                                 val workData = Data.Builder()
                                                     .putString(TransferWorker.KEY_JOB_ID, resumed.id)
                                                     .putString(TransferWorker.KEY_SOURCE_ACCOUNT_ID, sourceAcc.id)
-                                                    .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destAcc.id)
+                                                    .putString(TransferWorker.KEY_DEST_ACCOUNT_ID, destId)
                                                     .putString(TransferWorker.KEY_MODE, resumed.mode.name)
                                                     .putBoolean("is_compressed", resumed.isCompressionEnabled)
                                                     .putString("org_mode", resumed.orgMode.name)
@@ -117,6 +121,8 @@ class MainActivity : FragmentActivity() {
                                                     workRequest
                                                 )
                                                 navController.navigate("transfer")
+                                            } else {
+                                                Toast.makeText(this@MainActivity, "Accounts for old job not found.", Toast.LENGTH_LONG).show()
                                             }
                                         }
                                     },

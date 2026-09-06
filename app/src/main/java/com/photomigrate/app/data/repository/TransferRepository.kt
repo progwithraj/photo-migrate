@@ -1008,6 +1008,7 @@ class TransferRepository(private val context: Context) {
     }
 
     suspend fun fetchItemsForWorker(account: GoogleAccount, ids: List<String>): List<MediaItem> = withContext(Dispatchers.IO) {
-        apiService.fetchMediaItemsByIds(account, ids)
+        val validAccount = oauthManager.refreshTokenIfNeededSuspend(account) ?: account
+        apiService.fetchMediaItemsByIds(validAccount, ids)
     }
 }
