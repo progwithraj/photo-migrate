@@ -1,11 +1,13 @@
 package com.photomigrate.app.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -18,16 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,30 +45,41 @@ fun MeshBackground() {
     val isDark = isSystemInDarkTheme()
     val themeColors = LocalThemeColors.current
     val baseColor = MaterialTheme.colorScheme.background
-    
-    val accent1 = if (isDark) themeColors.primary.copy(alpha = 0.5f) else themeColors.mesh1
+
+    val infiniteTransition = rememberInfiniteTransition(label = "MeshPulse")
+    val pulseOffset by infiniteTransition.animateFloat(
+        initialValue = -30f,
+        targetValue = 30f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(6000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "MeshOffset"
+    )
+
+    val accent1 = if (isDark) themeColors.primary.copy(alpha = 0.45f) else themeColors.mesh1
     val accent2 = if (isDark) themeColors.primary.copy(alpha = 0.3f) else themeColors.mesh2
     val accent3 = if (isDark) themeColors.primary.copy(alpha = 0.2f) else themeColors.mesh3
 
     Box(modifier = Modifier.fillMaxSize().background(baseColor)) {
-        Canvas(modifier = Modifier.fillMaxSize().blur(80.dp)) {
+        Canvas(modifier = Modifier.fillMaxSize().blur(90.dp)) {
             drawCircle(
                 color = accent1,
-                radius = size.width,
-                center = Offset(size.width * 0.2f, size.height * 0.2f),
-                alpha = 0.4f
+                radius = size.width * 0.95f,
+                center = Offset(size.width * 0.2f + pulseOffset, size.height * 0.2f - pulseOffset),
+                alpha = 0.45f
             )
             drawCircle(
                 color = accent2,
-                radius = size.width * 0.8f,
-                center = Offset(size.width * 0.8f, size.height * 0.5f),
-                alpha = 0.3f
+                radius = size.width * 0.85f,
+                center = Offset(size.width * 0.8f - pulseOffset, size.height * 0.5f + pulseOffset),
+                alpha = 0.35f
             )
             drawCircle(
                 color = accent3,
-                radius = size.width * 0.6f,
-                center = Offset(size.width * 0.3f, size.height * 0.8f),
-                alpha = 0.3f
+                radius = size.width * 0.7f,
+                center = Offset(size.width * 0.3f + pulseOffset, size.height * 0.85f),
+                alpha = 0.35f
             )
         }
     }
@@ -80,12 +91,40 @@ fun GlassCard(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+    val borderColor = if (isDark) {
+        Brush.linearGradient(
+            colors = listOf(
+                Color.White.copy(alpha = 0.25f),
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                Color.White.copy(alpha = 0.05f)
+            )
+        )
+    } else {
+        Brush.linearGradient(
+            colors = listOf(
+                Color.White.copy(alpha = 0.8f),
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                Color.White.copy(alpha = 0.4f)
+            )
+        )
+    }
+
+    val interactionSource = remember { MutableInteractionSource() }
+
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
-            .border(0.5.dp, GlassCardBorder, RoundedCornerShape(24.dp))
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) { onClick() }
+                } else Modifier
+            ),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = if (isDark) 0.35f else 0.45f),
         tonalElevation = 0.dp,
         shadowElevation = 0.dp
     ) {
@@ -119,11 +158,20 @@ fun AccountCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Profile Picture with ring
+            // Profile Picture with glowing ambient ring
             Box(
                 modifier = Modifier
-                    .size(54.dp)
-                    .border(2.dp, if (isSelectedAsSource || isSelectedAsDest) MaterialTheme.colorScheme.primary else Color.Transparent, CircleShape)
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isSelectedAsSource || isSelectedAsDest) {
+                            Brush.linearGradient(
+                                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
+                            )
+                        } else {
+                            Brush.linearGradient(colors = listOf(Color.White.copy(0.2f), Color.White.copy(0.05f)))
+                        }
+                    )
                     .padding(3.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -141,14 +189,14 @@ fun AccountCard(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = account.email.take(1).uppercase(),
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.primary,
-                            fontSize = 20.sp
+                            fontSize = 22.sp
                         )
                     }
                 }
@@ -162,12 +210,13 @@ fun AccountCard(
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 17.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = account.email,
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -175,7 +224,9 @@ fun AccountCard(
 
             IconButton(
                 onClick = onRemoveAccount,
-                modifier = Modifier.size(32.dp).background(Color.White.copy(alpha = 0.1f), CircleShape)
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(Color.White.copy(alpha = 0.1f), CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
@@ -212,26 +263,26 @@ fun AccountCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             LinearProgressIndicator(
-                progress = percentage,
+                progress = { percentage },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)),
+                    .height(7.dp)
+                    .clip(RoundedCornerShape(3.5.dp)),
                 color = storageColor,
-                trackColor = Color.White.copy(alpha = 0.1f)
+                trackColor = Color.White.copy(alpha = 0.12f)
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
-        // Role Selector - iOS segment style
+        // Role Selector - iOS segment style with smooth color animation
         Surface(
-            color = Color.White.copy(alpha = 0.05f),
-            shape = RoundedCornerShape(12.dp),
+            color = Color.Black.copy(alpha = 0.15f),
+            shape = RoundedCornerShape(14.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
-                modifier = Modifier.padding(4.dp).height(40.dp),
+                modifier = Modifier.padding(4.dp).height(42.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RoleButton(
@@ -258,20 +309,22 @@ fun RoleButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when {
-        isSelected -> MaterialTheme.colorScheme.primary
-        else -> Color.Transparent
-    }
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        animationSpec = tween(250),
+        label = "RoleBgColor"
+    )
 
-    val contentColor = when {
-        isSelected -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(250),
+        label = "RoleTextColor"
+    )
 
     Box(
         modifier = modifier
             .fillMaxHeight()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(backgroundColor)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
@@ -279,7 +332,7 @@ fun RoleButton(
         Text(
             text = label,
             fontSize = 13.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
             color = contentColor
         )
     }
@@ -290,21 +343,33 @@ fun MediaItemGridCard(
     item: MediaItem,
     onToggleSelect: () -> Unit
 ) {
+    val scale by animateFloatAsState(
+        targetValue = if (item.isSelected) 0.94f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy),
+        label = "CardScale"
+    )
+
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(12.dp))
+            .graphicsLayer(scaleX = scale, scaleY = scale)
+            .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(
+                width = if (item.isSelected) 2.5.dp else 0.dp,
+                color = if (item.isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = RoundedCornerShape(14.dp)
+            )
             .clickable { onToggleSelect() }
     ) {
         AsyncImage(
             model = item.thumbnailUrl ?: item.baseUrl,
-            contentDescription = item.filename,
+            contentDescription = item.safeFilename,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // File Size Badge
+        // File Size Badge (Frosted Pill)
         val formattedSize = remember(item.sizeBytes) {
             if (item.sizeBytes <= 0) ""
             else {
@@ -320,8 +385,8 @@ fun MediaItemGridCard(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(6.dp)
-                    .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                    .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(6.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp)
             ) {
                 Text(
                     text = formattedSize,
@@ -332,20 +397,26 @@ fun MediaItemGridCard(
             }
         }
 
-        // Overlay status badge
+        // Overlay selection checkmark
         if (item.isSelected) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f)),
+                    .background(Color.Black.copy(alpha = 0.35f)),
                 contentAlignment = Alignment.TopEnd
             ) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = "Selected",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(8.dp)
-                )
+                Surface(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = CircleShape,
+                    modifier = Modifier.padding(6.dp).size(22.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Selected",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(3.dp)
+                    )
+                }
             }
         }
 
@@ -355,8 +426,8 @@ fun MediaItemGridCard(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(6.dp)
-                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                    .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(6.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -365,7 +436,8 @@ fun MediaItemGridCard(
                         tint = Color.White,
                         modifier = Modifier.size(12.dp)
                     )
-                    Text("VIDEO", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text("VIDEO", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -487,6 +559,7 @@ fun LogItemRow(log: TransferLog) {
         Text(
             text = log.message,
             fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace,
             color = color,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
