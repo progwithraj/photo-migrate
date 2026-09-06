@@ -95,10 +95,15 @@ fun CredButton(
     enabled: Boolean = true,
     icon: ImageVector? = Icons.AutoMirrored.Filled.ArrowForward
 ) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+
     val gradient = Brush.horizontalGradient(
-        colors = if (enabled) listOf(CredPinkGradientStart, CredPinkGradientEnd)
+        colors = if (enabled) listOf(primaryColor, primaryColor.copy(alpha = 0.82f))
                  else listOf(Color(0xFF2C2D40), Color(0xFF1E1F30))
     )
+
+    val textColor = if (enabled) onPrimaryColor else Color(0xFF636578)
 
     Surface(
         onClick = onClick,
@@ -124,14 +129,14 @@ fun CredButton(
                     text = text,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 15.sp,
-                    color = if (enabled) Color.White else Color(0xFF636578)
+                    color = textColor
                 )
                 if (icon != null) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = if (enabled) Color.White else Color(0xFF636578),
+                        tint = textColor,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -156,9 +161,9 @@ fun FeatureBadgeRow(modifier: Modifier = Modifier) {
 @Composable
 fun FeatureBadge(icon: ImageVector, label: String) {
     Surface(
-        color = Color(0xFF131422),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         shape = RoundedCornerShape(12.dp),
-        border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFF23253B))
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
@@ -167,7 +172,7 @@ fun FeatureBadge(icon: ImageVector, label: String) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = CredNeonPink,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(12.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -175,7 +180,7 @@ fun FeatureBadge(icon: ImageVector, label: String) {
                 text = label,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

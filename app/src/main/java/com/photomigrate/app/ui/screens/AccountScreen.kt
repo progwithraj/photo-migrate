@@ -145,7 +145,7 @@ fun AccountScreen(
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Surface(
-                            color = CredNeonPink.copy(alpha = 0.15f),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.size(40.dp)
                         ) {
@@ -153,7 +153,7 @@ fun AccountScreen(
                                 Icon(
                                     imageVector = Icons.Default.CollectionsBookmark,
                                     contentDescription = null,
-                                    tint = CredNeonPink,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -166,7 +166,7 @@ fun AccountScreen(
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 22.sp,
                             lineHeight = 28.sp,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -175,7 +175,7 @@ fun AccountScreen(
                             text = "Move your photos between accounts without losing quality. Fast, secure and hassle-free.",
                             fontSize = 13.sp,
                             lineHeight = 18.sp,
-                            color = Color(0xFF9394A5)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))

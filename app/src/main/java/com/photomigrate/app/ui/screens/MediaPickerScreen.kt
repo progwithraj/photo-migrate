@@ -539,8 +539,9 @@ fun OptionCard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val borderColor = if (isSelected) CredNeonPink else Color(0xFF23253B)
-    val bgColor = if (isSelected) Color(0xFF1E1022) else Color(0xFF131422)
+    val activeColor = MaterialTheme.colorScheme.primary
+    val borderColor = if (isSelected) activeColor else MaterialTheme.colorScheme.outlineVariant
+    val bgColor = if (isSelected) activeColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
 
     Surface(
         onClick = onClick,
@@ -559,7 +560,7 @@ fun OptionCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Surface(
-                    color = if (isSelected) CredNeonPink.copy(alpha = 0.2f) else Color(0xFF1C1E30),
+                    color = if (isSelected) activeColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.size(36.dp)
                 ) {
@@ -567,7 +568,7 @@ fun OptionCard(
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = if (isSelected) CredNeonPink else Color(0xFF9394A5),
+                            tint = if (isSelected) activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -580,12 +581,12 @@ fun OptionCard(
                         text = title,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = subtitle,
                         fontSize = 11.sp,
-                        color = Color(0xFF9394A5)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -594,8 +595,8 @@ fun OptionCard(
                 selected = isSelected,
                 onClick = onClick,
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = CredNeonPink,
-                    unselectedColor = Color(0xFF4A4B60)
+                    selectedColor = activeColor,
+                    unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
             )
         }

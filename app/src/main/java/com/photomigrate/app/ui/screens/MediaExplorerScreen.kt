@@ -80,7 +80,7 @@ fun MediaExplorerScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(CredNeonPink.copy(alpha = 0.2f))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                             .clickable {
                                 val nextIdx = (accounts.indexOf(selectedAccount) + 1) % accounts.size.coerceAtLeast(1)
                                 if (accounts.isNotEmpty()) selectedAccount = accounts[nextIdx]
@@ -90,7 +90,7 @@ fun MediaExplorerScreen(
                         Text(
                             text = selectedAccount!!.email.take(1).uppercase(),
                             fontWeight = FontWeight.Bold,
-                            color = CredNeonPink,
+                            color = MaterialTheme.colorScheme.primary,
                             fontSize = 16.sp
                         )
                     }
@@ -103,16 +103,16 @@ fun MediaExplorerScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search your photos...", color = Color(0xFF636578), fontSize = 14.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF636578)) },
+                placeholder = { Text("Search your photos...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f), fontSize = 14.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF131422),
-                    unfocusedContainerColor = Color(0xFF131422),
-                    focusedBorderColor = CredNeonPink,
-                    unfocusedBorderColor = Color(0xFF23253B)
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.3f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.3f),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                 )
             )
 
@@ -131,16 +131,16 @@ fun MediaExplorerScreen(
                         label = { Text(category, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium) },
                         shape = RoundedCornerShape(20.dp),
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = CredNeonPink,
-                            selectedLabelColor = Color.White,
-                            containerColor = Color(0xFF131422),
-                            labelColor = Color(0xFF9394A5)
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.3f),
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         border = FilterChipDefaults.filterChipBorder(
                             enabled = true,
                             selected = isSelected,
-                            borderColor = Color(0xFF23253B),
-                            selectedBorderColor = CredNeonPink
+                            borderColor = MaterialTheme.colorScheme.outlineVariant,
+                            selectedBorderColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }

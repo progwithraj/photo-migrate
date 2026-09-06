@@ -49,7 +49,7 @@ fun VaultScreen(
             modifier = Modifier.padding(top = 8.dp)
         ) {
             Surface(
-                color = CredNeonPink.copy(alpha = 0.2f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.size(40.dp)
             ) {
@@ -57,7 +57,7 @@ fun VaultScreen(
                     Icon(
                         imageVector = Icons.Default.Security,
                         contentDescription = null,
-                        tint = CredNeonPink,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -70,12 +70,12 @@ fun VaultScreen(
                     text = "Vault",
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 24.sp,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Your memories, always safe.",
                     fontSize = 13.sp,
-                    color = Color(0xFF9394A5)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -92,7 +92,7 @@ fun VaultScreen(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
                         modifier = Modifier.size(56.dp),
-                        tint = CredNeonPink
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -108,12 +108,13 @@ fun VaultScreen(
                     Text(
                         text = "Your vault is currently empty.\nMove items here using the Vault button in Picker.",
                         fontSize = 12.sp,
-                        color = Color(0xFF9394A5),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
             }
-        } else {
+        }
+else {
             // Checklist Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -157,33 +158,33 @@ fun VaultScreen(
 fun VaultCheckItem(text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Surface(
-            color = CredNeonPink,
+            color = MaterialTheme.colorScheme.primary,
             shape = CircleShape,
             modifier = Modifier.size(18.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Check, null, tint = Color.White, modifier = Modifier.size(12.dp))
+                Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(12.dp))
             }
         }
         Spacer(modifier = Modifier.width(10.dp))
-        Text(text, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text(text, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
 @Composable
 fun VaultCheckChip(text: String) {
     Surface(
-        color = Color(0xFF131422),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         shape = RoundedCornerShape(20.dp),
-        border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFF23253B))
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.CheckCircle, null, tint = CredNeonPink, modifier = Modifier.size(14.dp))
+            Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(text, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

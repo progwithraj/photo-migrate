@@ -307,6 +307,8 @@ fun AnalyticsHeader(totalBytes: Long, jobCount: Int) {
     val displayValue = if (showInGb) totalGb else totalMb
     val unitText = if (showInGb) " GB" else " MB"
 
+    val primaryColor = MaterialTheme.colorScheme.primary
+
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -314,38 +316,38 @@ fun AnalyticsHeader(totalBytes: Long, jobCount: Int) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Lifetime Stats", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = CredNeonPink)
+                Text("Lifetime Stats", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = primaryColor)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
                         text = String.format(Locale.US, "%.1f", displayValue),
                         fontSize = 36.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = unitText,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF9394A5),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
                 }
-                Text("Total Data Migrated", fontSize = 12.sp, color = Color(0xFF9394A5))
+                Text("Total Data Migrated", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             
             Column(horizontalAlignment = Alignment.End) {
                 Surface(
-                    color = CredNeonPink.copy(alpha = 0.15f),
+                    color = primaryColor.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.size(48.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Analytics, contentDescription = null, tint = CredNeonPink)
+                        Icon(Icons.Default.Analytics, contentDescription = null, tint = primaryColor)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("$jobCount Jobs", fontWeight = FontWeight.Bold, color = Color.White)
+                Text("$jobCount Jobs", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -357,15 +359,15 @@ fun HistoryJobCard(job: TransferJob, onClick: () -> Unit) {
     val statusColor = when (job.status) {
         JobStatus.COMPLETED -> SuccessGreen
         JobStatus.FAILED -> MaterialTheme.colorScheme.error
-        else -> CredNeonPink
+        else -> MaterialTheme.colorScheme.primary
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF131422)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF23253B))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -378,10 +380,10 @@ fun HistoryJobCard(job: TransferJob, onClick: () -> Unit) {
                         imageVector = if (job.mode == com.photomigrate.app.data.model.TransferMode.MOVE) Icons.Default.MoveUp else Icons.Default.ContentCopy,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Color(0xFF9394A5)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(date, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                    Text(date, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
                 
                 Surface(
