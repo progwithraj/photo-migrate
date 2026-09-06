@@ -42,7 +42,6 @@ fun AccountScreen(
     onSelectDestAccount: (String) -> Unit,
     onAddAccountClick: () -> Unit,
     onAddTelegramClick: () -> Unit,
-    onAddTelegramProClick: () -> Unit,
     onOpenSetupGuide: () -> Unit,
     onOpenHistory: () -> Unit,
     onRemoveAccount: (String) -> Unit,
@@ -174,11 +173,9 @@ fun AccountScreen(
                         }
 
                         TextButton(onClick = onAddTelegramClick) {
-                            Text("TG Bot", fontWeight = FontWeight.Bold)
-                        }
-
-                        TextButton(onClick = onAddTelegramProClick) {
-                            Text("TG Pro (2GB)", fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Telegram", fontWeight = FontWeight.Bold, color = Color(0xFF0088CC))
                         }
                     }
                 }

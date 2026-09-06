@@ -413,9 +413,6 @@ class MainActivity : FragmentActivity() {
                                         onAddTelegramClick = {
                                             showTelegramSetup = true
                                         },
-                                        onAddTelegramProClick = {
-                                            showTelegramProSetup = true
-                                        },
                                         onOpenSetupGuide = { navController.navigate("settings") },
                                         onOpenHistory = { navController.navigate("history") },
                                         onRemoveAccount = { email ->
@@ -584,6 +581,8 @@ class MainActivity : FragmentActivity() {
                                         oauthManager.saveClientCredentials(clientId, clientSecret)
                                         Toast.makeText(this@MainActivity, "Credentials Saved!", Toast.LENGTH_SHORT).show()
                                     },
+                                    onAddTelegramClick = { showTelegramSetup = true },
+                                    onAddTelegramProClick = { showTelegramProSetup = true },
                                     onBackClick = { navController.popBackStack() }
                                 )
                             }

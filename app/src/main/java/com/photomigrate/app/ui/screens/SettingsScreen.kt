@@ -39,6 +39,8 @@ fun SettingsScreen(
     currentClientId: String,
     currentClientSecret: String,
     onSaveCredentials: (String, String) -> Unit,
+    onAddTelegramClick: () -> Unit,
+    onAddTelegramProClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -307,6 +309,75 @@ fun SettingsScreen(
                             label = { Text(label, fontSize = 12.sp) },
                             shape = RoundedCornerShape(8.dp)
                         )
+                    }
+                }
+            }
+
+            // Section: Telegram Integration & Vaults
+            Text(
+                text = "Telegram Vaults & Integration",
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "1. Telegram Bot Vault (50MB Limit)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Fast setup via @BotFather token. Best for compressed photos and short clips.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = onAddTelegramClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0088CC))
+                    ) {
+                        Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Configure Telegram Bot Vault")
+                    }
+                }
+            }
+
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "2. Telegram Pro (MTProto 2GB)",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            color = Color(0xFF229ED9).copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            Text("PRO 2GB", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF229ED9), modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                        }
+                    }
+                    Text(
+                        text = "Direct MTProto chunked streaming for large 4K videos and RAW files up to 2 GB per file.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        onClick = onAddTelegramProClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF229ED9))
+                    ) {
+                        Icon(Icons.Default.ElectricBolt, null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Connect Telegram Pro (MTProto)")
                     }
                 }
             }

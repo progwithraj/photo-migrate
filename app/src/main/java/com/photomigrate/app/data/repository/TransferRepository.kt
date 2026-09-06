@@ -505,9 +505,9 @@ class TransferRepository(private val context: Context) {
 
             val (origFile, _) = downloadResult
 
-            val fileToUpload = if (isCompressed && item.mimeType.startsWith("image/")) {
+            val fileToUpload = if (isCompressed && item.safeMimeType.startsWith("image/")) {
                 addLog(jobId, "Optimizing '${item.filename}'...")
-                com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.mimeType) ?: origFile
+                com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.safeMimeType) ?: origFile
             } else origFile
 
             val actualFileSize = fileToUpload.length()
@@ -515,8 +515,8 @@ class TransferRepository(private val context: Context) {
             
             addLog(jobId, "Streaming '${item.filename}' ($sizeMb MB) via MTProto Pro (Up to 2GB supported)...")
             
-            val caption = if (item.creationTime.isNotEmpty()) {
-                "Migrated (MTProto Pro): ${item.filename}\nOriginal Date: ${item.creationTime}"
+            val caption = if (item.safeCreationTime.isNotEmpty()) {
+                "Migrated (MTProto Pro): ${item.filename}\nOriginal Date: ${item.safeCreationTime}"
             } else "Migrated (MTProto Pro): ${item.filename}"
 
             var lastUpdate = 0L
@@ -609,9 +609,9 @@ class TransferRepository(private val context: Context) {
                 return@withContext
             }
 
-            val fileToUpload = if (isCompressed && item.mimeType.startsWith("image/")) {
+            val fileToUpload = if (isCompressed && item.safeMimeType.startsWith("image/")) {
                 addLog(jobId, "Optimizing '${item.filename}'...")
-                com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.mimeType) ?: origFile
+                com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.safeMimeType) ?: origFile
             } else origFile
 
             val actualFileSize = fileToUpload.length()
@@ -619,8 +619,8 @@ class TransferRepository(private val context: Context) {
             
             addLog(jobId, "Uploading '${item.filename}' ($sizeMb MB) to Telegram...")
             
-            val caption = if (item.creationTime.isNotEmpty()) {
-                "Migrated: ${item.filename}\nOriginal Date: ${item.creationTime}"
+            val caption = if (item.safeCreationTime.isNotEmpty()) {
+                "Migrated: ${item.filename}\nOriginal Date: ${item.safeCreationTime}"
             } else "Migrated: ${item.filename}"
 
             val success = telegramService.uploadMedia(
@@ -726,9 +726,9 @@ class TransferRepository(private val context: Context) {
         val (origFile, hash) = downloadResult
         
         // Storage Saver Optimization: Compress image before upload
-        val fileToUpload = if (isCompressed && item.mimeType.startsWith("image/")) {
+        val fileToUpload = if (isCompressed && item.safeMimeType.startsWith("image/")) {
             addLog(jobId, "Optimizing '${item.filename}' (Storage Saver)...")
-            com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.mimeType) ?: origFile
+            com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.safeMimeType) ?: origFile
         } else {
             origFile
         }
@@ -761,10 +761,10 @@ class TransferRepository(private val context: Context) {
         
         // Smart AI Organization Step: Determine target album
         var targetAlbumId: String? = null
-        if (orgMode != OrganizationMode.NONE && item.mimeType.startsWith("image/")) {
+        if (orgMode != OrganizationMode.NONE && item.safeMimeType.startsWith("image/")) {
             val albumName = when (orgMode) {
                 OrganizationMode.BY_DATE -> {
-                    val rawTime = item.creationTime
+                    val rawTime = item.safeCreationTime
                     if (rawTime.length >= 7 && rawTime.contains("-")) {
                         try {
                             // Safer extraction: yyyy-MM
