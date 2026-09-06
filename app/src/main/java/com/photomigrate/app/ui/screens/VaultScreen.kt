@@ -35,8 +35,8 @@ fun VaultScreen(
 ) {
     var selectedItem by remember { mutableStateOf<VaultItemEntity?>(null) }
 
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-        Spacer(modifier = Modifier.height(12.dp))
+    Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 16.dp)) {
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             "Incognito Vault",
             fontWeight = FontWeight.ExtraBold,

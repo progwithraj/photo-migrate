@@ -29,10 +29,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.photomigrate.app.data.auth.OAuthManager
+import com.photomigrate.app.data.model.SortBy
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.theme.ThemeManager
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     currentClientId: String,
@@ -196,6 +197,118 @@ fun SettingsScreen(
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                val currentLimit = remember { mutableIntStateOf(oauthManager.getConcurrentLimit()) }
+                val safeMax = remember { oauthManager.getSafeMaxConcurrentLimit() }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Parallel Streams",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Simultaneous transfers",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            onClick = { 
+                                if (currentLimit.intValue > 1) {
+                                    currentLimit.intValue--
+                                    oauthManager.setConcurrentLimit(currentLimit.intValue)
+                                }
+                            },
+                            enabled = currentLimit.intValue > 1
+                        ) {
+                            Icon(Icons.Default.Remove, null)
+                        }
+                        
+                        Text(
+                            text = currentLimit.intValue.toString(),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+
+                        IconButton(
+                            onClick = { 
+                                if (currentLimit.intValue < safeMax) {
+                                    currentLimit.intValue++
+                                    oauthManager.setConcurrentLimit(currentLimit.intValue)
+                                }
+                            },
+                            enabled = currentLimit.intValue < safeMax
+                        ) {
+                            Icon(Icons.Default.Add, null)
+                        }
+                    }
+                }
+                
+                if (currentLimit.intValue >= safeMax) {
+                    Text(
+                        "Reached safe hardware limit for your device ($safeMax).",
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
+
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                val currentDefaultSort = remember { mutableStateOf(oauthManager.getDefaultSortOrder()) }
+                
+                Text(
+                    text = "Default Library View",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Choose how your photos are sorted by default.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val sortOptions = listOf(
+                        SortBy.NEWEST to "Newest",
+                        SortBy.OLDEST to "Oldest",
+                        SortBy.SIZE_DESC to "Largest",
+                        SortBy.SIZE_ASC to "Smallest",
+                        SortBy.NAME_AZ to "A-Z",
+                        SortBy.NAME_ZA to "Z-A"
+                    )
+
+                    sortOptions.forEach { (option, label) ->
+                        FilterChip(
+                            selected = currentDefaultSort.value == option,
+                            onClick = {
+                                currentDefaultSort.value = option
+                                oauthManager.setDefaultSortOrder(option)
+                            },
+                            label = { Text(label, fontSize = 12.sp) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
             }
 
             HorizontalDivider(

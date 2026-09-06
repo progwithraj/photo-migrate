@@ -10,11 +10,13 @@ import com.photomigrate.app.data.db.QueuedItem
 import com.photomigrate.app.data.db.TransferDatabase
 import com.photomigrate.app.data.db.TransferredFile
 import com.photomigrate.app.data.db.VaultItemEntity
+import com.photomigrate.app.data.db.PendingCleanup
 import com.photomigrate.app.data.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,6 +35,8 @@ class TransferRepository(private val context: Context) {
     }
 
     private val apiService = GooglePhotosService(context)
+    private val telegramService = com.photomigrate.app.data.api.TelegramService()
+    private val telegramMTProtoService = com.photomigrate.app.data.api.TelegramMTProtoService()
     private val oauthManager = OAuthManager(context)
     private val db = TransferDatabase.getDatabase(context)
     private val gson = Gson()
@@ -175,12 +179,39 @@ class TransferRepository(private val context: Context) {
         }
     }
 
+    suspend fun getIncompleteJob(): TransferJob? = withContext(Dispatchers.IO) {
+        db.transferDao().getLastIncompleteJob()?.toModel()
+    }
+
+    suspend fun cancelJob(jobId: String) = withContext(Dispatchers.IO) {
+        db.transferDao().getJobById(jobId)?.let { entity ->
+            db.transferDao().updateJob(entity.copy(status = JobStatus.CANCELLED.name, endTime = System.currentTimeMillis()))
+        }
+    }
+
+    suspend fun resumeJob(job: TransferJob) = withContext(Dispatchers.IO) {
+        // Reset counters so the re-scan doesn't double-count
+        val updated = job.copy(
+            status = JobStatus.RUNNING,
+            completedItems = 0,
+            failedItems = 0,
+            transferredBytes = 0L,
+            isResumed = true,
+            speedHistory = emptyList()
+        )
+        _currentJob.value = updated
+        db.transferDao().updateJob(updated.toEntity())
+        addLog(job.id, "Resuming unfinished transfer job. Re-verifying queue...")
+        updated
+    }
+
     /**
      * Starts a new transfer/migration job and persists selected IDs to the database.
      */
     suspend fun createAndStartJob(
         sourceAccount: GoogleAccount,
-        destinationAccount: GoogleAccount,
+        destinationAccountId: String,
+        destinationType: DestinationType,
         mode: TransferMode,
         isCompressed: Boolean,
         orgMode: OrganizationMode,
@@ -188,7 +219,8 @@ class TransferRepository(private val context: Context) {
     ): TransferJob = withContext(Dispatchers.IO) {
         val job = TransferJob(
             sourceAccountId = sourceAccount.id,
-            destinationAccountId = destinationAccount.id,
+            destinationAccountId = destinationAccountId,
+            destinationType = destinationType,
             mode = mode,
             orgMode = orgMode,
             batchAlbumName = null,
@@ -252,6 +284,18 @@ class TransferRepository(private val context: Context) {
         } catch (e: Exception) {
             Log.e("TransferRepository", "DB Error in clearHistory: ${e.message}")
         }
+    }
+
+    suspend fun getPendingCleanups(): List<PendingCleanup> = withContext(Dispatchers.IO) {
+        try {
+            db.transferDao().getAllPendingCleanups()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun markCleanupDone(mediaId: String, accountId: String) = withContext(Dispatchers.IO) {
+        db.transferDao().deletePendingCleanup(mediaId, accountId)
     }
     
     suspend fun getTotalTransferredBytes(): Long = withContext(Dispatchers.IO) {
@@ -321,10 +365,10 @@ class TransferRepository(private val context: Context) {
     fun getVaultManager() = vaultManager
 
     private suspend fun updateJobSync(jobId: String? = null, reducer: (TransferJob) -> TransferJob) {
-        val current = _currentJob.value ?: return
-        if (jobId != null && current.id != jobId) return 
-        val updated = reducer(current)
-        _currentJob.value = updated
+        _currentJob.update { prev ->
+            if (prev == null || (jobId != null && prev.id != jobId)) prev else reducer(prev)
+        }
+        val updated = _currentJob.value ?: return
         
         // Persist update to DB immediately
         try {
@@ -335,10 +379,10 @@ class TransferRepository(private val context: Context) {
     }
 
     private fun updateJob(jobId: String? = null, reducer: (TransferJob) -> TransferJob) {
-        val current = _currentJob.value ?: return
-        if (jobId != null && current.id != jobId) return 
-        val updated = reducer(current)
-        _currentJob.value = updated
+        _currentJob.update { prev ->
+            if (prev == null || (jobId != null && prev.id != jobId)) prev else reducer(prev)
+        }
+        val updated = _currentJob.value ?: return
         
         // Persist update to DB (async)
         CoroutineScope(Dispatchers.IO).launch {
@@ -370,9 +414,12 @@ class TransferRepository(private val context: Context) {
         id = id,
         sourceAccountId = sourceAccountId,
         destinationAccountId = destinationAccountId,
+        destinationType = destinationType.name,
         mode = mode.name,
         orgMode = orgMode.name,
         batchAlbumName = batchAlbumName,
+        isCompressionEnabled = isCompressionEnabled,
+        isResumed = isResumed,
         totalItems = totalItems,
         completedItems = completedItems,
         failedItems = failedItems,
@@ -387,9 +434,12 @@ class TransferRepository(private val context: Context) {
         id = id,
         sourceAccountId = sourceAccountId,
         destinationAccountId = destinationAccountId,
+        destinationType = try { DestinationType.valueOf(destinationType) } catch (e: Exception) { DestinationType.GOOGLE },
         mode = TransferMode.valueOf(mode),
         orgMode = OrganizationMode.valueOf(orgMode),
         batchAlbumName = batchAlbumName,
+        isCompressionEnabled = isCompressionEnabled,
+        isResumed = isResumed,
         totalItems = totalItems,
         completedItems = completedItems,
         failedItems = failedItems,
@@ -418,7 +468,8 @@ class TransferRepository(private val context: Context) {
      */
     suspend fun processNextMediaItem(
         sourceAccount: GoogleAccount,
-        destinationAccount: GoogleAccount,
+        destinationAccountId: String,
+        destinationType: DestinationType,
         item: MediaItem,
         mode: TransferMode,
         jobId: String,
@@ -426,12 +477,204 @@ class TransferRepository(private val context: Context) {
         orgMode: OrganizationMode = OrganizationMode.NONE,
         onProgressUpdate: (TransferJob) -> Unit
     ) = withContext(Dispatchers.IO) {
-        // Step 1: Ensure OAuth Tokens are valid
         val validSource = oauthManager.refreshTokenIfNeededSuspend(sourceAccount) ?: sourceAccount
-        val validDest = oauthManager.refreshTokenIfNeededSuspend(destinationAccount) ?: destinationAccount
-
         val startTime = System.currentTimeMillis()
         
+        // Handle Telegram Pro MTProto Destination (Files up to 2GB)
+        if (destinationType == DestinationType.TELEGRAM_MTPROTO) {
+            val proAccount = oauthManager.getTelegramProAccounts().find { it.id == destinationAccountId }
+            val botAccount = oauthManager.getTelegramAccounts().find { it.id == destinationAccountId }
+            
+            val botToken = proAccount?.apiHash?.ifEmpty { null } ?: botAccount?.botToken
+            val chatId = proAccount?.phoneNumber?.ifEmpty { null } ?: botAccount?.chatId
+
+            if (botToken.isNullOrEmpty() || chatId.isNullOrEmpty()) {
+                item.status = SyncStatus.FAILED
+                updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+                addLog(jobId, "ERROR: Telegram Pro session credentials not found.", isError = true)
+                return@withContext
+            }
+
+            addLog(jobId, "Downloading '${item.filename}' for MTProto Pro Upload...")
+            val downloadResult = apiService.downloadToTempFile(validSource, item) { _, _ -> }
+            if (downloadResult == null) {
+                item.status = SyncStatus.FAILED
+                updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+                addLog(jobId, "ERROR: Download failed for '${item.filename}'", isError = true)
+                return@withContext
+            }
+
+            val (origFile, _) = downloadResult
+
+            val fileToUpload = if (isCompressed && item.mimeType.startsWith("image/")) {
+                addLog(jobId, "Optimizing '${item.filename}'...")
+                com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.mimeType) ?: origFile
+            } else origFile
+
+            val actualFileSize = fileToUpload.length()
+            val sizeMb = String.format(java.util.Locale.US, "%.2f", actualFileSize / 1024.0 / 1024.0)
+            
+            addLog(jobId, "Streaming '${item.filename}' ($sizeMb MB) via MTProto Pro (Up to 2GB supported)...")
+            
+            val caption = if (item.creationTime.isNotEmpty()) {
+                "Migrated (MTProto Pro): ${item.filename}\nOriginal Date: ${item.creationTime}"
+            } else "Migrated (MTProto Pro): ${item.filename}"
+
+            var lastUpdate = 0L
+
+            val success = telegramMTProtoService.uploadLargeMedia(
+                botToken = botToken,
+                chatId = chatId,
+                file = fileToUpload,
+                mimeType = item.mimeType,
+                caption = caption,
+                onProgress = { uploadedBytes, totalBytes ->
+                    val now = System.currentTimeMillis()
+                    if (now - lastUpdate > 300) {
+                        val elapsed = (now - startTime) / 1000L
+                        if (elapsed > 0) {
+                            val currentSpeed = (uploadedBytes / elapsed)
+                            updateJob(jobId) { 
+                                val newHistory = (it.speedHistory + currentSpeed).takeLast(200)
+                                it.copy(
+                                    speedBytesPerSec = currentSpeed,
+                                    speedHistory = newHistory
+                                )
+                            }
+                            _currentJob.value?.let { onProgressUpdate(it) }
+                        }
+                        lastUpdate = now
+                    }
+                }
+            )
+
+            origFile.delete()
+            if (fileToUpload != origFile) fileToUpload.delete()
+
+            if (success) {
+                item.status = SyncStatus.COMPLETED
+                val elapsedSec = ((System.currentTimeMillis() - startTime) / 1000L).coerceAtLeast(1L)
+                val speed = actualFileSize / elapsedSec
+
+                updateJobSync(jobId) { 
+                    val newHistory = (it.speedHistory + speed).takeLast(50)
+                    it.copy(
+                        completedItems = it.completedItems + 1,
+                        transferredBytes = it.transferredBytes + actualFileSize,
+                        speedBytesPerSec = speed,
+                        speedHistory = newHistory
+                    )
+                }
+                addLog(jobId, "SUCCESS: Streamed '${item.filename}' via MTProto Pro.")
+                
+                if (mode == TransferMode.MOVE) {
+                    val deleted = apiService.deleteFromSourceAccount(validSource, item.id, item.filename)
+                    if (deleted) addLog(jobId, "FREED STORAGE: '${item.filename}' moved to Trash.")
+                }
+            } else {
+                item.status = SyncStatus.FAILED
+                updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+                addLog(jobId, "ERROR: MTProto Pro upload failed.", isError = true)
+            }
+            _currentJob.value?.let { onProgressUpdate(it) }
+            return@withContext
+        }
+
+        // Handle Telegram Bot Destination (Files up to 50MB)
+        if (destinationType == DestinationType.TELEGRAM_BOT) {
+            val telegramAccount = oauthManager.getTelegramAccounts().find { it.id == destinationAccountId }
+            if (telegramAccount == null) {
+                item.status = SyncStatus.FAILED
+                updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+                addLog(jobId, "ERROR: Telegram Account not found", isError = true)
+                return@withContext
+            }
+
+            addLog(jobId, "Downloading '${item.filename}' for Telegram...")
+            val downloadResult = apiService.downloadToTempFile(validSource, item) { _, _ -> }
+            if (downloadResult == null) {
+                item.status = SyncStatus.FAILED
+                updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+                addLog(jobId, "ERROR: Download failed for '${item.filename}'", isError = true)
+                return@withContext
+            }
+
+            val (origFile, _) = downloadResult
+
+            // Telegram 50MB Limit Check for Bot API
+            if (origFile.length() > 50 * 1024 * 1024) {
+                item.status = SyncStatus.FAILED
+                origFile.delete()
+                updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+                addLog(jobId, "ERROR: File '${item.filename}' exceeds Telegram Bot 50MB limit. Use Telegram Pro (MTProto) for files up to 2GB.", isError = true)
+                return@withContext
+            }
+
+            val fileToUpload = if (isCompressed && item.mimeType.startsWith("image/")) {
+                addLog(jobId, "Optimizing '${item.filename}'...")
+                com.photomigrate.app.util.MediaCompressor.compressImage(context, origFile, item.mimeType) ?: origFile
+            } else origFile
+
+            val actualFileSize = fileToUpload.length()
+            val sizeMb = String.format(java.util.Locale.US, "%.2f", actualFileSize / 1024.0 / 1024.0)
+            
+            addLog(jobId, "Uploading '${item.filename}' ($sizeMb MB) to Telegram...")
+            
+            val caption = if (item.creationTime.isNotEmpty()) {
+                "Migrated: ${item.filename}\nOriginal Date: ${item.creationTime}"
+            } else "Migrated: ${item.filename}"
+
+            val success = telegramService.uploadMedia(
+                token = telegramAccount.botToken,
+                chatId = telegramAccount.chatId,
+                file = fileToUpload,
+                mimeType = item.mimeType,
+                caption = caption
+            )
+
+            origFile.delete()
+            if (fileToUpload != origFile) fileToUpload.delete()
+
+            if (success) {
+                item.status = SyncStatus.COMPLETED
+                val elapsedSec = ((System.currentTimeMillis() - startTime) / 1000L).coerceAtLeast(1L)
+                val speed = actualFileSize / elapsedSec
+
+                updateJobSync(jobId) { 
+                    val newHistory = (it.speedHistory + speed).takeLast(50)
+                    it.copy(
+                        completedItems = it.completedItems + 1,
+                        transferredBytes = it.transferredBytes + actualFileSize,
+                        speedBytesPerSec = speed,
+                        speedHistory = newHistory
+                    )
+                }
+                addLog(jobId, "SUCCESS: Sent '${item.filename}' to Telegram.")
+                
+                if (mode == TransferMode.MOVE) {
+                    val deleted = apiService.deleteFromSourceAccount(validSource, item.id, item.filename)
+                    if (deleted) addLog(jobId, "FREED STORAGE: '${item.filename}' moved to Trash.")
+                }
+            } else {
+                item.status = SyncStatus.FAILED
+                updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+                addLog(jobId, "ERROR: Telegram upload failed.", isError = true)
+            }
+            _currentJob.value?.let { onProgressUpdate(it) }
+            return@withContext
+        }
+
+        // --- Standard Google Photos Transfer Below ---
+
+        val destinationAccount = oauthManager.getSavedAccounts().find { it.id == destinationAccountId }
+        if (destinationAccount == null) {
+            item.status = SyncStatus.FAILED
+            updateJob(jobId) { it.copy(failedItems = it.failedItems + 1) }
+            addLog(jobId, "ERROR: Destination Google account not found", isError = true)
+            return@withContext
+        }
+        val validDest = oauthManager.refreshTokenIfNeededSuspend(destinationAccount) ?: destinationAccount
+
         // Smart Duplicate Detection Step 0: Check metadata before downloading
         val duplicateSize = findSmartDuplicateSize(destinationAccount.id, item)
         if (duplicateSize != null) {
@@ -612,8 +855,18 @@ class TransferRepository(private val context: Context) {
                 if (deleted) {
                     item.status = SyncStatus.TRASHED_FROM_SOURCE
                     addLog(jobId, "FREED STORAGE: '${item.filename}' moved to Trash in source account.")
+                    // Clean up from pending if it was there
+                    db.transferDao().deletePendingCleanup(item.id, sourceAccount.id)
                 } else {
-                    addLog(jobId, "Notice: Transferred to destination, but could not trash from source. Ensure you checked the 'Full Drive' permission box during login.", isError = true)
+                    addLog(jobId, "Notice: Transferred to destination, but could not trash from source. File tracked for manual cleanup.", isError = true)
+                    db.transferDao().insertPendingCleanup(
+                        PendingCleanup(
+                            mediaId = item.id,
+                            accountId = sourceAccount.id,
+                            filename = item.filename,
+                            errorReason = "Insufficient permission or API error"
+                        )
+                    )
                 }
             }
         } else {

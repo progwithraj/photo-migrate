@@ -175,6 +175,8 @@ fun TransferScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val strategyText = if (job?.isResumed == true) "Backfill" else job?.mode?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "Copy"
+                    StatItem(label = "Strategy", value = strategyText)
                     StatItem(label = "Speed", value = speedText)
                     StatItem(label = "Remaining", value = remainingText)
                     StatItem(label = "Failed", value = "${job?.failedItems ?: 0}")

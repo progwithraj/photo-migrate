@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.CloudSync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
@@ -34,7 +35,9 @@ import java.util.*
 fun HistoryScreen(
     history: List<TransferJob>,
     totalBytes: Long,
+    hasPendingCleanups: Boolean,
     onBackClick: () -> Unit,
+    onOpenCleanup: () -> Unit,
     onClearHistory: () -> Unit,
     onFetchLogs: suspend (String) -> List<TransferLog>
 ) {
@@ -54,6 +57,15 @@ fun HistoryScreen(
                     }
                 },
                 actions = {
+                    if (hasPendingCleanups) {
+                        IconButton(onClick = onOpenCleanup) {
+                            BadgedBox(
+                                badge = { Badge { Text("!") } }
+                            ) {
+                                Icon(Icons.Default.CloudSync, contentDescription = "Pending Cleanups")
+                            }
+                        }
+                    }
                     if (history.isNotEmpty()) {
                         IconButton(onClick = onClearHistory) {
                             Icon(Icons.Default.DeleteSweep, contentDescription = "Clear History")
@@ -66,10 +78,11 @@ fun HistoryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Spacer(modifier = Modifier.height(padding.calculateTopPadding() - 8.dp))
+            
             // Global Analytics Header
             AnalyticsHeader(totalBytes, history.size)
 

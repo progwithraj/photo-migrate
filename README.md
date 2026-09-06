@@ -42,6 +42,12 @@ Prioritize your migration with surgical precision.
 - **Threshold Filtering**: Filter out files smaller or larger than a specific MB limit.
 - **Alphabetical & Date Sorting**: Organize by filename (A-Z) or chronological order.
 
+### 4. Telegram Cloud Backup Vault (Bot & MTProto Pro)
+Backup your memories directly to private Telegram chats or channels.
+- **Telegram Bot Mode**: Quick, zero-setup photo backup for files up to 50MB.
+- **Telegram MTProto Pro Mode**: Direct chunked MTProto engine for streaming large 4K videos and RAW files up to **2 GB per file**.
+- **Auto-Captions**: Preserves original photo filenames and dates directly in Telegram captions.
+
 ### 4. Smart AI Organization (Experimental)
 Leverage **Google ML Kit** for on-device content analysis.
 - **Consensus Batch Grouping**: The app analyzes a sample of your selected photos to determine a
@@ -53,6 +59,11 @@ Leverage **Google ML Kit** for on-device content analysis.
 Maximize your free 15GB Google storage tier.
 - **On-the-fly Compression**: Converts images to **WebP Lossy (80% Quality)** during transfer.
 - **Smart Resizing**: Automatically scales 4K+ images down to optimized resolutions.
+
+### 6. Background Reliability
+- **Concurrent Engine**: Downloads and uploads multiple photos simultaneously for maximum network saturation.
+- **Smart Backfill**: Automatically detects interrupted or killed jobs and prompts you to resume. It uses "Smart Skip" to instantly bypass already transferred items and finish the queue.
+- **Cloud Cleanup Recovery**: Tracks failed deletions and allows you to retry trashing items that got stuck in the cloud.
 
 ---
 

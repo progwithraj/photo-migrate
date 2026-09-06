@@ -10,6 +10,10 @@ enum class SyncStatus {
     FAILED
 }
 
+enum class SortBy {
+    NEWEST, OLDEST, SIZE_DESC, SIZE_ASC, NAME_AZ, NAME_ZA
+}
+
 data class MediaItem(
     val id: String,
     val filename: String,

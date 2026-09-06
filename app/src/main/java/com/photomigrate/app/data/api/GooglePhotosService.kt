@@ -24,6 +24,7 @@ class GooglePhotosService(private val context: Context) {
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)
         .writeTimeout(120, TimeUnit.SECONDS)
+        .connectionPool(okhttp3.ConnectionPool(10, 5, TimeUnit.MINUTES))
         .build()
 
     private val gson = Gson()
@@ -341,7 +342,7 @@ class GooglePhotosService(private val context: Context) {
             val outputStream = FileOutputStream(tempFile)
             val digest = MessageDigest.getInstance("SHA-256")
 
-            val buffer = ByteArray(8192)
+            val buffer = ByteArray(65536) // Optimized 64KB buffer
             var bytesRead: Int
             var totalRead = 0L
 
@@ -385,7 +386,7 @@ class GooglePhotosService(private val context: Context) {
                     var totalRead = 0L
                     val buffer = okio.Buffer()
                     var read: Long
-                    while (source.read(buffer, 8192L).also { read = it } != -1L) {
+                    while (source.read(buffer, 65536L).also { read = it } != -1L) { // Optimized 64KB
                         sink.write(buffer, read)
                         totalRead += read
                         onProgress(totalRead, file.length())

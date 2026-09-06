@@ -30,9 +30,12 @@ data class TransferJobEntity(
     @PrimaryKey val id: String,
     val sourceAccountId: String,
     val destinationAccountId: String,
+    val destinationType: String,
     val mode: String,
     val orgMode: String,
     val batchAlbumName: String?,
+    val isCompressionEnabled: Boolean = false,
+    val isResumed: Boolean = false,
     val totalItems: Int,
     val completedItems: Int,
     val failedItems: Int,
@@ -59,6 +62,15 @@ data class VaultItemEntity(
     val mimeType: String,
     val sizeBytes: Long,
     val localEncryptedPath: String,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "pending_cleanups", primaryKeys = ["mediaId", "accountId"])
+data class PendingCleanup(
+    val mediaId: String,
+    val accountId: String,
+    val filename: String,
+    val errorReason: String?,
     val timestamp: Long = System.currentTimeMillis()
 )
 
@@ -119,6 +131,12 @@ interface TransferDao {
     @Query("DELETE FROM transfer_jobs")
     suspend fun clearHistory()
 
+    @Query("SELECT * FROM transfer_jobs WHERE status NOT IN ('COMPLETED', 'CANCELLED') ORDER BY startTime DESC LIMIT 1")
+    suspend fun getLastIncompleteJob(): TransferJobEntity?
+
+    @Query("SELECT * FROM transfer_jobs WHERE id = :id")
+    suspend fun getJobById(id: String): TransferJobEntity?
+
     // Vault
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVaultItem(item: VaultItemEntity)
@@ -128,9 +146,19 @@ interface TransferDao {
 
     @Query("DELETE FROM vault_items WHERE id = :id")
     suspend fun deleteVaultItem(id: String)
+
+    // Pending Cleanups
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPendingCleanup(item: PendingCleanup)
+
+    @Query("SELECT * FROM pending_cleanups ORDER BY timestamp DESC")
+    suspend fun getAllPendingCleanups(): List<PendingCleanup>
+
+    @Query("DELETE FROM pending_cleanups WHERE mediaId = :mediaId AND accountId = :accountId")
+    suspend fun deletePendingCleanup(mediaId: String, accountId: String)
 }
 
-@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class, TransferJobEntity::class, JobLogEntity::class, VaultItemEntity::class], version = 8, exportSchema = false)
+@Database(entities = [TransferredFile::class, QueuedItem::class, RemoteMetadata::class, TransferJobEntity::class, JobLogEntity::class, VaultItemEntity::class, PendingCleanup::class], version = 11, exportSchema = false)
 abstract class TransferDatabase : RoomDatabase() {
     abstract fun transferDao(): TransferDao
 

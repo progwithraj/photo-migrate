@@ -46,8 +46,8 @@ fun MediaExplorerScreen(
             onClose = { selectedItemForViewer = null }
         )
     } else {
-        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-            Spacer(modifier = Modifier.height(12.dp))
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 16.dp)) {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 "Explore Your Gallery",
                 fontWeight = FontWeight.ExtraBold,

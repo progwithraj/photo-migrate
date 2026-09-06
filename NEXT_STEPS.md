@@ -46,22 +46,20 @@ Leverage `androidx.security:security-crypto` for privacy.
 
 - **Goal**: Biometric-locked local vault for encrypted local storage of sensitive photos.
 
-### 6. Cross-Platform Migration
-
-Expand beyond Google Photos to support a wider ecosystem.
-
-- **Goal**: Integrate APIs for Dropbox, OneDrive, or iCloud (via Apple's Data Transfer Project).
+### 6. Cross-Platform Migration (Telegram) [COMPLETED]
+Expand beyond Google Photos to support secure chat platforms as unlimited backup vaults.
+- **Phase A (Bot API)**: Integrated Telegram Bot API for simple, isolated backups (Up to 50MB per file).
+- **Phase B (MTProto Pro)**: Integrated MTProto Pro chunked streaming engine for files up to 2GB (4K Videos, RAWs).
 
 ### 7. Scheduled "Mirroring"
-
 Keep accounts in sync automatically.
-
 - **Goal**: Use `WorkManager` for periodic background sync tasks (e.g., Weekly mirrors).
 
-### 8. Sort & Filter
-
+### 8. Sort & Filter [COMPLETED]
 To Move/Copy the highest/lowest size photo/videos in the first place
+- **Implementation**: Added sort (Size, Date, Name) and MB thresholds to Picker.
+- **Status**: **COMPLETED**. Integrated directly into the Auto-Select logic.
 
-- **Goal**: To let user filter and sort photos/videos based on size.
-
-### 9. Next: TBA
+### 9. Automatic Retry & Backfill [COMPLETED]
+- **Implementation**: Detects stuck/killed jobs on launch and seamlessly resumes them, using Smart Skip for already transferred items.
+- **Status**: **COMPLETED**.

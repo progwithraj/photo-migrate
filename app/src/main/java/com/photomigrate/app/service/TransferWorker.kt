@@ -16,7 +16,9 @@ import com.photomigrate.app.data.model.JobStatus
 import com.photomigrate.app.data.model.TransferJob
 import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.data.repository.TransferRepository
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 class TransferWorker(
     private val context: Context,
@@ -52,7 +54,17 @@ class TransferWorker(
 
         val accounts = oauthManager.getSavedAccounts()
         val sourceAccount = accounts.find { it.id == sourceId } ?: return Result.failure()
-        val destAccount = accounts.find { it.id == destId } ?: return Result.failure()
+        
+        val jobFromDb = repository.getHistory().find { it.id == jobId }
+        val destinationType = jobFromDb?.destinationType ?: com.photomigrate.app.data.model.DestinationType.GOOGLE
+
+        // Sync repository state if it's null (e.g. process restart)
+        if (repository.currentJob.value == null || repository.currentJob.value?.id != jobId) {
+            val jobFromDb = repository.getHistory().find { it.id == jobId }
+            if (jobFromDb != null) {
+                repository.resumeJob(jobFromDb)
+            }
+        }
 
         // Create foreground notification
         createNotificationChannel()
@@ -98,45 +110,49 @@ class TransferWorker(
         }
 
         // The job was already created in MainActivity, we just start processing.
-        Log.d("TransferWorker", "Job ready. Starting loop...")
+        val concurrentLimit = oauthManager.getConcurrentLimit()
+        Log.d("TransferWorker", "Job ready. Starting parallel loop with limit: $concurrentLimit")
+
+        val semaphore = Semaphore(concurrentLimit) 
 
         try {
-            for ((index, item) in selectedItems.withIndex()) {
-                val currentJob = repository.currentJob.value
-                // If a new job was started, this worker should stop.
-                if (currentJob?.id != jobId) {
-                    Log.d("TransferWorker", "Job ID mismatch. Aborting old worker.")
-                    return Result.success()
-                }
+            coroutineScope {
+                selectedItems.forEachIndexed { index, item ->
+                    launch {
+                        semaphore.withPermit {
+                            val currentJob = repository.currentJob.value
+                            if (currentJob?.id != jobId) return@launch
 
-                if (currentJob.status == JobStatus.PAUSED) {
-                    while (repository.currentJob.value?.status == JobStatus.PAUSED) {
-                        delay(1000)
+                            if (currentJob.status == JobStatus.PAUSED) {
+                                while (repository.currentJob.value?.status == JobStatus.PAUSED) {
+                                    delay(1000)
+                                }
+                            }
+
+                            if (repository.currentJob.value?.status == JobStatus.CANCELLED) {
+                                return@launch
+                            }
+
+                            val activeItems = selectedItems.size
+                            val progressPercent = ((index + 1) * 100) / activeItems
+                            setForeground(createForegroundInfo("Syncing memories in parallel...", progressPercent, 100))
+
+                            val isCompressed = inputData.getBoolean("is_compressed", false)
+                            val orgModeName = inputData.getString("org_mode") ?: com.photomigrate.app.data.model.OrganizationMode.NONE.name
+                            val orgMode = com.photomigrate.app.data.model.OrganizationMode.valueOf(orgModeName)
+
+                            repository.processNextMediaItem(
+                                sourceAccount = sourceAccount,
+                                destinationAccountId = destId,
+                                destinationType = destinationType,
+                                item = item,
+                                mode = mode,
+                                jobId = jobId,
+                                isCompressed = isCompressed,
+                                orgMode = orgMode
+                            ) { _ -> }
+                        }
                     }
-                }
-
-                if (repository.currentJob.value?.status == JobStatus.CANCELLED) {
-                    break
-                }
-
-                val progressPercent = ((index + 1) * 100) / selectedItems.size
-                val notificationText = "Syncing ${index + 1}/${selectedItems.size}: ${item.filename}"
-                setForeground(createForegroundInfo(notificationText, progressPercent, 100))
-
-                val isCompressed = inputData.getBoolean("is_compressed", false)
-                val orgModeName = inputData.getString("org_mode") ?: com.photomigrate.app.data.model.OrganizationMode.NONE.name
-                val orgMode = com.photomigrate.app.data.model.OrganizationMode.valueOf(orgModeName)
-
-                repository.processNextMediaItem(
-                    sourceAccount = sourceAccount,
-                    destinationAccount = destAccount,
-                    item = item,
-                    mode = mode,
-                    jobId = jobId,
-                    isCompressed = isCompressed,
-                    orgMode = orgMode
-                ) { updatedJob ->
-                    // Update live job state
                 }
             }
             
@@ -144,8 +160,7 @@ class TransferWorker(
                 val finalJob = repository.currentJob.value
                 val status = when {
                     finalJob == null -> JobStatus.FAILED
-                    finalJob.failedItems > 0 && finalJob.completedItems == 0 -> JobStatus.FAILED
-                    finalJob.failedItems > 0 -> JobStatus.COMPLETED // Or add a PARTIAL status
+                    finalJob.failedItems > 0 -> JobStatus.FAILED
                     else -> JobStatus.COMPLETED
                 }
                 repository.updateJobStatus(status)

@@ -7,6 +7,12 @@ enum class TransferMode {
     MOVE  // Copy to destination, then delete from source account to free storage
 }
 
+enum class DestinationType {
+    GOOGLE,
+    TELEGRAM_BOT,
+    TELEGRAM_MTPROTO
+}
+
 enum class OrganizationMode {
     NONE,
     BY_DATE,   // e.g. "August 2026"
@@ -33,10 +39,12 @@ data class TransferJob(
     val id: String = UUID.randomUUID().toString(),
     val sourceAccountId: String,
     val destinationAccountId: String,
+    val destinationType: DestinationType = DestinationType.GOOGLE,
     val mode: TransferMode = TransferMode.COPY,
     val orgMode: OrganizationMode = OrganizationMode.NONE,
     val batchAlbumName: String? = null, // Consensus album name for AI grouping
     val isCompressionEnabled: Boolean = false,
+    val isResumed: Boolean = false,
     val selectedMediaIds: List<String> = emptyList(),
     val totalItems: Int = 0,
     val completedItems: Int = 0,

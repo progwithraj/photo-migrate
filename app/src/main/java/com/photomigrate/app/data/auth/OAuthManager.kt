@@ -6,6 +6,7 @@ import android.util.Base64
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.photomigrate.app.data.model.GoogleAccount
+import com.photomigrate.app.data.model.SortBy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
@@ -77,6 +78,26 @@ class OAuthManager(private val context: Context) {
 
     fun setAiOrgEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(PREF_AI_ORG_ENABLED, enabled).apply()
+    }
+
+    fun getConcurrentLimit(): Int = prefs.getInt("concurrent_transfer_limit", 3)
+
+    fun setConcurrentLimit(limit: Int) {
+        prefs.edit().putInt("concurrent_transfer_limit", limit).apply()
+    }
+
+    fun getSafeMaxConcurrentLimit(): Int {
+        val cores = Runtime.getRuntime().availableProcessors()
+        return (cores - 2).coerceAtLeast(1)
+    }
+
+    fun getDefaultSortOrder(): SortBy {
+        val name = prefs.getString("default_sort_order", SortBy.NEWEST.name) ?: SortBy.NEWEST.name
+        return try { SortBy.valueOf(name) } catch (e: Exception) { SortBy.NEWEST }
+    }
+
+    fun setDefaultSortOrder(sortBy: SortBy) {
+        prefs.edit().putString("default_sort_order", sortBy.name).apply()
     }
 
     fun generateAuthUrl(): String {
@@ -348,6 +369,60 @@ class OAuthManager(private val context: Context) {
         val current =
             getSavedAccounts().filterNot { it.email.equals(accountEmail, ignoreCase = true) }
         prefs.edit().putString("saved_accounts_json", gson.toJson(current)).apply()
+    }
+
+    // Telegram Account Persistence
+    fun getTelegramAccounts(): List<com.photomigrate.app.data.model.TelegramAccount> {
+        val json = prefs.getString("saved_telegram_accounts_json", "[]")
+        val type = object : com.google.gson.reflect.TypeToken<List<com.photomigrate.app.data.model.TelegramAccount>>() {}.type
+        return try {
+            gson.fromJson(json, type) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun saveTelegramAccount(account: com.photomigrate.app.data.model.TelegramAccount) {
+        val current = getTelegramAccounts().toMutableList()
+        val index = current.indexOfFirst { it.id == account.id }
+        if (index >= 0) {
+            current[index] = account
+        } else {
+            current.add(account)
+        }
+        prefs.edit().putString("saved_telegram_accounts_json", gson.toJson(current)).apply()
+    }
+
+    fun removeTelegramAccount(id: String) {
+        val current = getTelegramAccounts().filterNot { it.id == id }
+        prefs.edit().putString("saved_telegram_accounts_json", gson.toJson(current)).apply()
+    }
+
+    // Telegram Pro (MTProto) Account Persistence
+    fun getTelegramProAccounts(): List<com.photomigrate.app.data.model.TelegramProAccount> {
+        val json = prefs.getString("saved_telegram_pro_accounts_json", "[]")
+        val type = object : com.google.gson.reflect.TypeToken<List<com.photomigrate.app.data.model.TelegramProAccount>>() {}.type
+        return try {
+            gson.fromJson(json, type) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    fun saveTelegramProAccount(account: com.photomigrate.app.data.model.TelegramProAccount) {
+        val current = getTelegramProAccounts().toMutableList()
+        val index = current.indexOfFirst { it.id == account.id }
+        if (index >= 0) {
+            current[index] = account
+        } else {
+            current.add(account)
+        }
+        prefs.edit().putString("saved_telegram_pro_accounts_json", gson.toJson(current)).apply()
+    }
+
+    fun removeTelegramProAccount(id: String) {
+        val current = getTelegramProAccounts().filterNot { it.id == id }
+        prefs.edit().putString("saved_telegram_pro_accounts_json", gson.toJson(current)).apply()
     }
 
     /**

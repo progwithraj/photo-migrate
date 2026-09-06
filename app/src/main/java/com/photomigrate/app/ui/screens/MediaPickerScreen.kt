@@ -29,15 +29,12 @@ import androidx.compose.ui.unit.sp
 import com.photomigrate.app.data.auth.OAuthManager
 import com.photomigrate.app.data.model.MediaItem
 import com.photomigrate.app.data.model.OrganizationMode
+import com.photomigrate.app.data.model.SortBy
 import com.photomigrate.app.data.model.TransferMode
 import com.photomigrate.app.ui.components.GlassCard
 import com.photomigrate.app.ui.components.MediaItemGridCard
 import com.photomigrate.app.ui.components.PremiumLoader
 import kotlinx.coroutines.launch
-
-enum class SortBy {
-    NEWEST, OLDEST, SIZE_DESC, SIZE_ASC, NAME_AZ, NAME_ZA
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +42,7 @@ fun MediaPickerScreen(
     mediaItems: List<MediaItem>,
     isLoading: Boolean,
     optimizationPreference: String = OAuthManager.OPT_ASK,
+    defaultSortBy: SortBy = SortBy.NEWEST,
     aiOrgEnabled: Boolean = false,
     onBackClick: () -> Unit,
     onMoveToVault: (List<MediaItem>) -> Unit,
@@ -61,7 +59,7 @@ fun MediaPickerScreen(
     var showFilterSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     
-    var sortBy by remember { mutableStateOf(SortBy.NEWEST) }
+    var sortBy by remember { mutableStateOf(defaultSortBy) }
     var minSizeMB by remember { mutableStateOf("") }
     var maxSizeMB by remember { mutableStateOf("") }
 
@@ -342,13 +340,12 @@ fun MediaPickerScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
         ) {
             if (isLoading && filteredMediaItems.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     PremiumLoader()
                 }
-            } else if (filteredMediaItems.isEmpty() && !isLoading) {
+            } else if (filteredMediaItems.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -375,7 +372,12 @@ fun MediaPickerScreen(
                                 }
                             }
                         },
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(
+                        top = padding.calculateTopPadding(),
+                        bottom = padding.calculateBottomPadding() + 16.dp,
+                        start = 12.dp,
+                        end = 12.dp
+                    ),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {

@@ -22,22 +22,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.photomigrate.app.data.model.AccountRole
 import com.photomigrate.app.data.model.GoogleAccount
+import com.photomigrate.app.data.model.TelegramAccount
+import com.photomigrate.app.data.model.TelegramProAccount
 import com.photomigrate.app.ui.components.AccountCard
 import com.photomigrate.app.ui.components.GlassCard
+import com.photomigrate.app.ui.components.TelegramAccountCard
+import com.photomigrate.app.ui.components.TelegramProAccountCard
 import com.photomigrate.app.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreen(
     accounts: List<GoogleAccount>,
+    telegramAccounts: List<TelegramAccount> = emptyList(),
+    telegramProAccounts: List<TelegramProAccount> = emptyList(),
     selectedSourceId: String?,
     selectedDestId: String?,
     onSelectSourceAccount: (String) -> Unit,
     onSelectDestAccount: (String) -> Unit,
     onAddAccountClick: () -> Unit,
+    onAddTelegramClick: () -> Unit,
+    onAddTelegramProClick: () -> Unit,
     onOpenSetupGuide: () -> Unit,
     onOpenHistory: () -> Unit,
     onRemoveAccount: (String) -> Unit,
+    onRemoveTelegramAccount: (String) -> Unit,
+    onRemoveTelegramProAccount: (String) -> Unit,
     onRefreshAll: () -> Unit,
     onProceedToPicker: () -> Unit
 ) {
@@ -113,10 +123,12 @@ fun AccountScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            item {
+                Spacer(modifier = Modifier.height(padding.calculateTopPadding() - 8.dp))
+            }
             item {
                 // Banner
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
@@ -158,13 +170,21 @@ fun AccountScreen(
                         TextButton(onClick = onAddAccountClick) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Add", fontWeight = FontWeight.Bold)
+                            Text("Google", fontWeight = FontWeight.Bold)
+                        }
+
+                        TextButton(onClick = onAddTelegramClick) {
+                            Text("TG Bot", fontWeight = FontWeight.Bold)
+                        }
+
+                        TextButton(onClick = onAddTelegramProClick) {
+                            Text("TG Pro (2GB)", fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
             }
 
-            if (accounts.isEmpty()) {
+            if (accounts.isEmpty() && telegramAccounts.isEmpty() && telegramProAccounts.isEmpty()) {
                 item {
                     GlassCard(
                         modifier = Modifier
@@ -218,6 +238,24 @@ fun AccountScreen(
                             }
                         },
                         onRemoveAccount = { onRemoveAccount(account.email) }
+                    )
+                }
+
+                items(telegramAccounts) { tgAccount ->
+                    TelegramAccountCard(
+                        account = tgAccount,
+                        isSelectedAsDest = selectedDestId == tgAccount.id,
+                        onSelectDest = { onSelectDestAccount(tgAccount.id) },
+                        onRemoveAccount = { onRemoveTelegramAccount(tgAccount.id) }
+                    )
+                }
+
+                items(telegramProAccounts) { proAccount ->
+                    TelegramProAccountCard(
+                        account = proAccount,
+                        isSelectedAsDest = selectedDestId == proAccount.id,
+                        onSelectDest = { onSelectDestAccount(proAccount.id) },
+                        onRemoveAccount = { onRemoveTelegramProAccount(proAccount.id) }
                     )
                 }
             }
