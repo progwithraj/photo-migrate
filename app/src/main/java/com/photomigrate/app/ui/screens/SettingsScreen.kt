@@ -382,6 +382,82 @@ fun SettingsScreen(
                 }
             }
 
+            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                var isScanning by remember { mutableStateOf(false) }
+                var stitchStatus by remember { mutableStateOf<String?>(null) }
+
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "3. In-App Telegram Part Stitcher",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Scans Telegram for split .part files, verifies 100% of parts exist, stitches them into full videos in phone Gallery, and cleans Telegram chat.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Button(
+                        onClick = {
+                            isScanning = true
+                            stitchStatus = "Scanning Telegram chat for split files..."
+                            coroutineScope.launch {
+                                val tgAccounts = oauthManager.getTelegramAccounts()
+                                val tgProAccounts = oauthManager.getTelegramProAccounts()
+                                val stitcher = com.photomigrate.app.util.TelegramStitcher(context)
+
+                                var foundAny = false
+                                val allTargetAccounts = tgAccounts + tgProAccounts.map { com.photomigrate.app.data.model.TelegramAccount(it.id, it.botToken, it.chatId, it.name) }
+                                
+                                for (acc in allTargetAccounts) {
+                                    val discovered = stitcher.discoverParts(acc.botToken, acc.chatId)
+                                    if (discovered.isNotEmpty()) {
+                                        foundAny = true
+                                        for ((baseName, parts) in discovered) {
+                                            stitcher.stitchAndMerge(
+                                                botToken = acc.botToken,
+                                                chatId = acc.chatId,
+                                                baseName = baseName,
+                                                parts = parts,
+                                                deleteFromTelegram = true,
+                                                onLog = { logMsg -> stitchStatus = logMsg },
+                                                onProgress = {}
+                                            )
+                                        }
+                                    }
+                                }
+
+                                isScanning = false
+                                if (!foundAny) stitchStatus = "No split .part files found in Telegram chat."
+                            }
+                        },
+                        enabled = !isScanning,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        if (isScanning) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
+                        } else {
+                            Icon(Icons.Default.CallMerge, null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Scan & Stitch Telegram Parts")
+                        }
+                    }
+
+                    if (stitchStatus != null) {
+                        Text(
+                            text = stitchStatus!!,
+                            fontSize = 11.sp,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
                 color = MaterialTheme.colorScheme.outlineVariant
